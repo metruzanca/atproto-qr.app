@@ -7,6 +7,7 @@ import { contentToValue } from '../lib/qr/content';
 import { QRPreview } from './QRPreview';
 import { ContentFields } from './ContentFields';
 import { StyleControls } from './StyleControls';
+import { ConfirmDialog } from './ConfirmDialog';
 import { Segmented, TextInput } from './ui';
 
 interface Props {
@@ -14,6 +15,8 @@ interface Props {
   onChange: (draft: Draft) => void;
   kind: QRKind;
   onKindChange?: (kind: QRKind) => void;
+  contentLocked?: boolean;
+  onUnlockContent?: () => void;
   qrData?: string;
   emptyHint?: string;
   loginHref?: string;
@@ -31,6 +34,7 @@ export function Studio(props: Props) {
   const [qr, setQr] = createSignal<QRCodeStyling | null>(null);
   const [downloading, setDownloading] = createSignal(false);
   const [copied, setCopied] = createSignal(false);
+  const [showUnlockModal, setShowUnlockModal] = createSignal(false);
 
   const data = () => props.qrData ?? contentToValue(props.draft.content);
 
@@ -73,7 +77,8 @@ export function Studio(props: Props) {
 
             <Show when={props.kind === 'fixed'}>
               <p class="mt-3 text-xs leading-relaxed text-slate-500">
-                Fixed: the QR encodes your data directly. Fixed codes can't be saved — download the image to keep it.
+                Fixed: the QR encodes your data directly. After saving, the data is locked — you can change the look,
+                but the printed image stays the same.
               </p>
             </Show>
 
@@ -108,10 +113,50 @@ export function Studio(props: Props) {
 
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Content</h2>
-          <ContentFields
-            content={props.draft.content}
-            onChange={(content) => props.onChange({ ...props.draft, content })}
-          />
+          <div class="relative">
+            <ContentFields
+              content={props.draft.content}
+              disabled={props.contentLocked}
+              onChange={(content) => props.onChange({ ...props.draft, content })}
+            />
+
+            <Show when={props.contentLocked}>
+              <div class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70 backdrop-blur-[1px]">
+                <button
+                  type="button"
+                  class="group flex flex-col items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-4 shadow-md transition hover:border-sky-400 hover:shadow-lg"
+                  onClick={() => setShowUnlockModal(true)}
+                  aria-label="Unlock data editing"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-7 w-7 text-slate-600 group-hover:hidden"
+                  >
+                    <rect x="4" y="11" width="16" height="10" rx="2" />
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                  </svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="hidden h-7 w-7 text-sky-600 group-hover:block"
+                  >
+                    <rect x="4" y="11" width="16" height="10" rx="2" />
+                    <path d="M8 11V7a4 4 0 0 1 7.9-1" />
+                  </svg>
+                  <span class="text-xs font-semibold text-slate-700">Edit data</span>
+                </button>
+              </div>
+            </Show>
+          </div>
         </section>
 
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -139,7 +184,7 @@ export function Studio(props: Props) {
             </p>
           </Show>
 
-          <Show when={props.onSave && props.kind === 'dynamic'}>
+          <Show when={props.onSave}>
             <div class="mt-5">
               <div class="flex items-end gap-2">
                 <div class="flex-1">
@@ -220,6 +265,18 @@ export function Studio(props: Props) {
           </Show>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showUnlockModal()}
+        title="Edit fixed code data?"
+        message="Changes to data will result in a new image."
+        confirmLabel="Confirm"
+        onConfirm={() => {
+          setShowUnlockModal(false);
+          props.onUnlockContent?.();
+        }}
+        onCancel={() => setShowUnlockModal(false)}
+      />
     </div>
   );
 }

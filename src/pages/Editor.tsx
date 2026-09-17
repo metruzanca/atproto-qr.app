@@ -38,6 +38,7 @@ export default function Editor() {
   const [existingNames, setExistingNames] = createSignal<Set<string>>(new Set());
   const [error, setError] = createSignal('');
   const [saving, setSaving] = createSignal(false);
+  const [unlocked, setUnlocked] = createSignal(false);
 
   const publicPath = () => `/${params.handle}/${params.id}`;
   const publicUrl = () => `${location.origin}${publicPath()}`;
@@ -90,10 +91,11 @@ export default function Editor() {
         setMode('redirect');
         setRedirectTarget(redirect.target);
         setExisting(null);
-        setKind('dynamic');
+        setKind('fixed');
         setDraft({ content: emptyContent('url'), style: { ...DEFAULT_STYLE } });
         setName(id);
       }
+      setUnlocked(false);
       setNameError('');
       const names = await listAllNames(authedClient(a), p.did);
       setExistingNames(new Set(names));
@@ -139,8 +141,10 @@ export default function Editor() {
       const client = authedClient(a);
       const buildRecord = (): QRRecord => {
         const record = makeRecord(d, existing() ?? undefined);
-        record.kind = 'dynamic';
-        record.qrValue = codeUrl(p.handle, v);
+        record.kind = kind();
+        if (kind() === 'dynamic') {
+          record.qrValue = codeUrl(p.handle, v);
+        }
         return record;
       };
       if (mode() === 'redirect') {
@@ -289,42 +293,26 @@ export default function Editor() {
               <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 This name is currently a <span class="font-semibold">redirect</span> to{' '}
                 <span class="font-mono">{redirectTarget()}</span> — it keeps an older printed URL working. Fill in the
-                details below and save to turn it back into a dynamic QR code.
+                details below and save to turn it back into a QR code.
               </div>
             </Show>
 
-            <Show when={kind() === 'fixed'}>
-              <div class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-                <h2 class="text-xl font-bold text-slate-900">Fixed codes can't be edited</h2>
-                <p class="mx-auto mt-2 max-w-md text-sm text-slate-600">
-                  This fixed code was saved before fixed codes became download-only. It always encodes its original
-                  data, so there's nothing to change. You can delete it, or recreate it as a dynamic code from the
-                  studio.
-                </p>
-                <A
-                  href="/"
-                  class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
-                >
-                  Open the studio
-                </A>
-              </div>
-            </Show>
-
-            <Show when={kind() === 'dynamic'}>
-              <Studio
-                draft={d()}
-                onChange={setDraft}
-                kind={kind()}
-                qrData={qrData()}
-                savedUrl={publicUrl()}
-                onSave={save}
-                saving={saving()}
-                name={name()}
-                onNameChange={onNameChange}
-                onGenerateName={generateName}
-                nameError={nameError()}
-              />
-            </Show>
+            <Studio
+              draft={d()}
+              onChange={setDraft}
+              kind={kind()}
+              onKindChange={mode() === 'redirect' ? setKind : undefined}
+              contentLocked={mode() === 'qr' && kind() === 'fixed' && !unlocked()}
+              onUnlockContent={() => setUnlocked(true)}
+              qrData={qrData()}
+              savedUrl={publicUrl()}
+              onSave={save}
+              saving={saving()}
+              name={name()}
+              onNameChange={onNameChange}
+              onGenerateName={generateName}
+              nameError={nameError()}
+            />
           </>
         )}
       </Show>

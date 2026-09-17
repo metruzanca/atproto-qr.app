@@ -191,8 +191,9 @@ export default function About() {
           <Disclosure summary="What's the difference between fixed and dynamic codes?">
             <p>
               A <span class="font-semibold text-slate-700">fixed</span> code encodes your data directly in the QR
-              image, just like any other QR generator. It's never saved anywhere — you design it, download it, and
-              that's it. What's printed always matches what you made, because there's nothing to change later.
+              image, just like any other QR generator. Saving it just stores a copy on your PDS for convenience. The
+              data stays locked afterwards so the printed image keeps matching what you made — you can restyle the
+              appearance freely, but changing the data produces a new image, so it's gated behind a confirmation.
             </p>
             <p class="mt-2">
               A <span class="font-semibold text-slate-700">dynamic</span> code encodes a link back to this app instead

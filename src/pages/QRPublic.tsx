@@ -95,7 +95,7 @@ export default function QRPublic() {
                 </span>
               </h1>
             </div>
-            <Show when={isOwner() && content()?.kind === 'dynamic'}>
+            <Show when={isOwner()}>
               <a
                 href={`/${params.handle}/${params.id}/edit`}
                 class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"

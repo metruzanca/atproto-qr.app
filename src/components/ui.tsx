@@ -56,14 +56,20 @@ export function ColorInput(props: JSX.InputHTMLAttributes<HTMLInputElement>) {
   );
 }
 
-export function Toggle(props: { checked: boolean; label: string; onChange: (value: boolean) => void }) {
+export function Toggle(props: {
+  checked: boolean;
+  label: string;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={props.checked}
+      disabled={props.disabled}
       onClick={() => props.onChange(!props.checked)}
-      class="flex items-center gap-2 text-sm text-slate-700"
+      class={`flex items-center gap-2 text-sm text-slate-700 ${props.disabled ? 'cursor-not-allowed opacity-60' : ''}`}
     >
       <span
         class={`relative inline-flex h-5 w-9 items-center rounded-full transition ${
@@ -85,14 +91,22 @@ export function Segmented(props: {
   value: string;
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
+  disabled?: boolean;
 }) {
   return (
-    <div class="inline-flex flex-wrap gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1">
+    <div
+      class={`inline-flex flex-wrap gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1 ${
+        props.disabled ? 'opacity-60' : ''
+      }`}
+    >
       {props.options.map((o) => (
         <button
           type="button"
+          disabled={props.disabled}
           onClick={() => props.onChange(o.value)}
           class={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+            props.disabled ? 'cursor-not-allowed' : ''
+          } ${
             props.value === o.value
               ? 'bg-white text-sky-700 shadow-sm'
               : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'

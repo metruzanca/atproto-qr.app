@@ -116,6 +116,7 @@ export default function Home() {
         </h1>
         <p class="mx-auto mt-3 max-w-2xl text-slate-600">
           Style a QR code in seconds, download it anywhere — or sign in to save it as a{' '}
+          <span class="font-semibold text-slate-800">fixed</span> or{' '}
           <span class="font-semibold text-slate-800">dynamic</span> code that lives in your own personal data server.
         </p>
       </section>

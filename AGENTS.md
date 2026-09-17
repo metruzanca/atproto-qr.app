@@ -25,17 +25,17 @@ pnpm exec tsc --noEmit   # typecheck (there is no lint script)
 
 ## Routes
 
-- `/` — Studio (Home): the generator; when signed in shows a Code type (Fixed/Dynamic) selector. Name field + Generate + "Save changes" appear only for Dynamic (creates a record, then navigates to `/edit`). Fixed is download-only. In Fixed mode the draft (content + style) is serialized into the `?d=` query param (`draftToParam`/`draftFromParam` in `src/lib/qr/record.ts`) so the state survives reloads, history, and bookmarks; Dynamic mode stops syncing and the param clears naturally on save.
+- `/` — Studio (Home): the generator; when signed in shows a Code type (Fixed/Dynamic) selector. Name field + Generate + "Save changes" appear for both kinds when signed in (creates a record, then navigates to `/edit`). In Fixed mode the draft (content + style) is serialized into the `?d=` query param (`draftToParam`/`draftFromParam` in `src/lib/qr/record.ts`) so the state survives reloads, history, and bookmarks; Dynamic mode stops syncing and the param clears naturally on save.
 - `/login`, `/oauth/callback` — OAuth flow.
 - `/codes` — list the user's saved QR records (was `/mine`).
 - `/:handle/:id` — public page: URL-type instantly redirects to the data target; other types render the styled QR (dynamic codes render their stored `qrValue`, i.e. the app URL). Follows redirect records.
-- `/:handle/:id/edit` — owner-gated editor; only Dynamic codes are editable (legacy Fixed records show a read-only notice). Save updates or renames; Delete cascade-deletes.
+- `/:handle/:id/edit` — owner-gated editor; both kinds editable (Fixed records lock the data form behind a padlock + confirm, since changing data produces a new image; style is always editable; kind is locked except when converting a redirect, where the Code type selector reappears). Save updates or renames; Delete cascade-deletes.
 - `/about` — privacy/technical explainer.
 
 ## Data model (records in the user's PDS)
 
-- `app.atproto-qr.qr` — a saved **dynamic** code. Shape: `{ $type, kind, content: { type, fields }, style, qrValue?, createdAt, updatedAt, aliases?: string[] }`.
-  - `kind` = `'fixed'` | `'dynamic'`. Only **dynamic** codes are ever written to the PDS: the QR encodes the app URL `{origin}/{handle}/{name}`, snapshotted into `qrValue` at save/rename so the image never changes; content stays editable. **Fixed** is the anonymous/download-only mode (QR encodes the real data via `contentToValue`) and produces no record — legacy records with `kind: 'fixed'` (or no `kind`) predate this and are read-only in the editor.
+- `app.atproto-qr.qr` — a saved code. Shape: `{ $type, kind, content: { type, fields }, style, qrValue?, createdAt, updatedAt, aliases?: string[] }`.
+  - `kind` = `'fixed'` | `'dynamic'`. **Dynamic**: the QR encodes the app URL `{origin}/{handle}/{name}`, snapshotted into `qrValue` at save/rename so the image never changes; content stays editable. **Fixed**: the QR encodes the real data via `contentToValue`; the record is a stored copy, and the data form is locked in the editor behind a confirm (changing it re-encodes → new image). Legacy records with no `kind` are treated as fixed.
   - `qrValue` = the exact string the QR encodes, stored for dynamic codes (snapshot of the app URL; stable across origin/handle changes). For fixed codes it's absent — derive from `content` via `qrValueFor`.
   - `aliases` = every previous name this code has had (oldest first); used for cascade delete.
 - `app.atproto-qr.redirect` — created at an old name when a code is renamed. Shape: `{ $type, target, note, createdAt }`. `note` is a visible "DO NOT DELETE — keeps printed QR codes working" warning (shown to users browsing their PDS).
@@ -50,7 +50,7 @@ Rename flow (`src/pages/Editor.tsx`): validate name unique → `com.atproto.repo
 - `src/lib/qr/content.ts` — 10 content types → payload string serializers (`contentToValue`); `codeUrl(handle, name)` → `{origin}/{handle}/{name}`.
 - `src/lib/qr/record.ts` — `QRRecord`/`Draft` types, `makeRecord`, `isValidRecord`, `qrValueFor(record, fallback)` (effective QR payload: dynamic → `qrValue`, else `contentToValue`).
 - `src/lib/qr/style.ts` — serializable `QRStyle` ↔ qr-code-styling options (`styleToOptions`).
-- `src/components/Studio.tsx` — shared generator (kind selector, content + style + preview + download + optional name/save block; `qrData` prop drives the encoded payload, name/save shown only for Dynamic).
+- `src/components/Studio.tsx` — shared generator (kind selector, content + style + preview + download + optional name/save block; `qrData` prop drives the encoded payload, name/save shown for both kinds; `contentLocked` overlays the data form with a padlock that unlocks via `ConfirmDialog`).
 - `src/lib/qr/name.ts` — slug validation, adjective/animal word lists, `generateCodeName`.
 
 ## Critical gotchas

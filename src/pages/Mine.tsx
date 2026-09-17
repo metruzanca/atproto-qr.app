@@ -50,8 +50,8 @@ export default function Mine() {
   };
 
   const kindRank = (entry: Entry): number => {
-    if (entry.kind === 'redirect') return 1;
-    return entry.record.kind === 'dynamic' ? 0 : 2;
+    if (entry.kind === 'redirect') return 2;
+    return entry.record.kind === 'dynamic' ? 0 : 1;
   };
 
   const load = async () => {
@@ -201,11 +201,9 @@ function renderQR(
         <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
           View
         </A>
-        <Show when={kind === 'dynamic'}>
-          <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
-            Edit
-          </A>
-        </Show>
+        <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
+          Edit
+        </A>
         <button
           type="button"
           onClick={() => onDelete(entry.rkey, entry.record.aliases)}
