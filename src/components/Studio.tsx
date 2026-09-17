@@ -1,16 +1,22 @@
 import { createSignal, Show } from 'solid-js';
+import { A } from '@solidjs/router';
 import { browserUtils, type QRCodeStyling } from '@liquid-js/qr-code-styling';
 
-import type { Draft } from '../lib/qr/record';
+import type { Draft, QRKind } from '../lib/qr/record';
 import { contentToValue } from '../lib/qr/content';
 import { QRPreview } from './QRPreview';
 import { ContentFields } from './ContentFields';
 import { StyleControls } from './StyleControls';
-import { TextInput } from './ui';
+import { Segmented, TextInput } from './ui';
 
 interface Props {
   draft: Draft;
   onChange: (draft: Draft) => void;
+  kind: QRKind;
+  onKindChange?: (kind: QRKind) => void;
+  qrData?: string;
+  emptyHint?: string;
+  loginHref?: string;
   onQRReady?: (qr: QRCodeStyling) => void;
   onSave?: () => Promise<void> | void;
   saving?: boolean;
@@ -26,7 +32,7 @@ export function Studio(props: Props) {
   const [downloading, setDownloading] = createSignal(false);
   const [copied, setCopied] = createSignal(false);
 
-  const data = () => contentToValue(props.draft.content);
+  const data = () => props.qrData ?? contentToValue(props.draft.content);
 
   const download = async (extension: 'png' | 'svg' = 'png') => {
     const instance = qr();
@@ -53,9 +59,59 @@ export function Studio(props: Props) {
   return (
     <div class="grid gap-8 lg:grid-cols-2">
       <div class="space-y-8">
+        <Show when={props.onKindChange}>
+          <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Code type</h2>
+            <Segmented
+              value={props.kind}
+              options={[
+                { value: 'fixed', label: 'Fixed' },
+                { value: 'dynamic', label: 'Dynamic' },
+              ]}
+              onChange={(v) => props.onKindChange?.(v as QRKind)}
+            />
+
+            <Show when={props.kind === 'fixed'}>
+              <p class="mt-3 text-xs leading-relaxed text-slate-500">
+                Fixed: the QR encodes your data directly. Fixed codes can't be saved — download the image to keep it.
+              </p>
+            </Show>
+
+            <Show when={props.kind === 'dynamic' && props.onSave}>
+              <p class="mt-3 text-xs leading-relaxed text-slate-500">
+                Dynamic: the QR encodes a link back to this app. You can change the data any time — the printed QR
+                never changes.
+              </p>
+            </Show>
+
+            <Show when={props.kind === 'dynamic' && !props.onSave && props.loginHref}>
+              <div class="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-4">
+                <h3 class="text-sm font-semibold text-sky-900">How dynamic codes work</h3>
+                <p class="mt-1 text-xs leading-relaxed text-sky-800">
+                  Print once, update any time. The code never changes, and always shows your latest info.{' '}
+                  <A href="/about" class="font-semibold text-sky-700 hover:underline">
+                    Learn more →
+                  </A>
+                </p>
+                <div class="mt-3">
+                  <a
+                    href={props.loginHref}
+                    class="inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
+                  >
+                    Sign in to save
+                  </a>
+                </div>
+              </div>
+            </Show>
+          </section>
+        </Show>
+
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Content</h2>
-          <ContentFields content={props.draft.content} onChange={(content) => props.onChange({ ...props.draft, content })} />
+          <ContentFields
+            content={props.draft.content}
+            onChange={(content) => props.onChange({ ...props.draft, content })}
+          />
         </section>
 
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -68,10 +124,22 @@ export function Studio(props: Props) {
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Preview</h2>
           <div class="flex justify-center rounded-lg bg-slate-50 p-6">
-            <QRPreview data={data()} style={props.draft.style} class="max-w-full" onReady={(q) => setQr(q)} />
+            <QRPreview
+              data={data()}
+              style={props.draft.style}
+              class="max-w-full"
+              emptyHint={props.emptyHint}
+              onReady={(q) => setQr(q)}
+            />
           </div>
 
-          <Show when={props.onSave}>
+          <Show when={props.kind === 'dynamic' && data()}>
+            <p class="mt-2 break-all text-center text-xs text-slate-500">
+              QR encodes: <span class="font-mono">{data()}</span>
+            </p>
+          </Show>
+
+          <Show when={props.onSave && props.kind === 'dynamic'}>
             <div class="mt-5">
               <div class="flex items-end gap-2">
                 <div class="flex-1">
@@ -106,6 +174,12 @@ export function Studio(props: Props) {
             >
               {props.saving ? 'Saving…' : 'Save changes'}
             </button>
+          </Show>
+
+          <Show when={props.onSave && props.kind === 'fixed'}>
+            <div class="mt-5 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              Fixed codes can't be saved. Download the QR image to keep it.
+            </div>
           </Show>
 
           <Show when={data()}>

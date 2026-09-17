@@ -182,6 +182,19 @@ export default function About() {
               updated version, because the reader always loads the current record from your server.
             </p>
           </Disclosure>
+          <Disclosure summary="What's the difference between fixed and dynamic codes?">
+            <p>
+              A <span class="font-semibold text-slate-700">fixed</span> code encodes your data directly in the QR
+              image, just like any other QR generator. It's never saved anywhere — you design it, download it, and
+              that's it. What's printed always matches what you made, because there's nothing to change later.
+            </p>
+            <p class="mt-2">
+              A <span class="font-semibold text-slate-700">dynamic</span> code encodes a link back to this app instead
+              (e.g. <span class="font-mono">https://atproto-qr.app/you/your-code</span>). When someone scans it, they
+              land on the code's page, which reads the record from your PDS and shows the current data. You can change
+              the data anytime — the printed QR never changes, because the image always points at the same page.
+            </p>
+          </Disclosure>
           <Disclosure summary="What if my PDS is unreachable?">
             <p>
               A code's page can't load while your PDS is down — just like any site that's temporarily offline. The

@@ -25,16 +25,18 @@ pnpm exec tsc --noEmit   # typecheck (there is no lint script)
 
 ## Routes
 
-- `/` — Studio (Home): the generator; when signed in shows a Name field + Generate button + "Save changes" (creates a record, then navigates to `/edit`).
+- `/` — Studio (Home): the generator; when signed in shows a Code type (Fixed/Dynamic) selector. Name field + Generate + "Save changes" appear only for Dynamic (creates a record, then navigates to `/edit`). Fixed is download-only.
 - `/login`, `/oauth/callback` — OAuth flow.
 - `/codes` — list the user's saved QR records (was `/mine`).
-- `/:handle/:id` — public page: URL-type instantly redirects to the target; other types render the styled QR. Follows redirect records.
-- `/:handle/:id/edit` — owner-gated editor; Save updates or renames; Delete cascade-deletes.
+- `/:handle/:id` — public page: URL-type instantly redirects to the data target; other types render the styled QR (dynamic codes render their stored `qrValue`, i.e. the app URL). Follows redirect records.
+- `/:handle/:id/edit` — owner-gated editor; only Dynamic codes are editable (legacy Fixed records show a read-only notice). Save updates or renames; Delete cascade-deletes.
 - `/about` — privacy/technical explainer.
 
 ## Data model (records in the user's PDS)
 
-- `app.atproto-qr.qr` — a code. Shape: `{ $type, content: { type, fields }, style, createdAt, updatedAt, aliases?: string[] }`.
+- `app.atproto-qr.qr` — a saved **dynamic** code. Shape: `{ $type, kind, content: { type, fields }, style, qrValue?, createdAt, updatedAt, aliases?: string[] }`.
+  - `kind` = `'fixed'` | `'dynamic'`. Only **dynamic** codes are ever written to the PDS: the QR encodes the app URL `{origin}/{handle}/{name}`, snapshotted into `qrValue` at save/rename so the image never changes; content stays editable. **Fixed** is the anonymous/download-only mode (QR encodes the real data via `contentToValue`) and produces no record — legacy records with `kind: 'fixed'` (or no `kind`) predate this and are read-only in the editor.
+  - `qrValue` = the exact string the QR encodes, stored for dynamic codes (snapshot of the app URL; stable across origin/handle changes). For fixed codes it's absent — derive from `content` via `qrValueFor`.
   - `aliases` = every previous name this code has had (oldest first); used for cascade delete.
 - `app.atproto-qr.redirect` — created at an old name when a code is renamed. Shape: `{ $type, target, note, createdAt }`. `note` is a visible "DO NOT DELETE — keeps printed QR codes working" warning (shown to users browsing their PDS).
 - rkey = the code's user-chosen name. Generated names are `{adjective}-{animal}` (`src/lib/qr/name.ts`). Slugs: lowercase letters/digits/hyphens, ≤63 chars.
@@ -45,9 +47,10 @@ Rename flow (`src/pages/Editor.tsx`): validate name unique → `com.atproto.repo
 
 - `src/lib/atproto/auth.ts` — `configureOAuth`, session store, sign-in/out, profile. `CLIENT_ID` differs dev (loopback) vs prod (metadata URL derived from `VITE_PUBLIC_ORIGIN`).
 - `src/lib/atproto/records.ts` — record CRUD: `createQRRecord` (atomic name-uniqueness via createRecord), `putQRRecord`, `putRedirectRecord`, `getQRRecord`/`getRedirectRecord`, `listQRRecords`, `listAllNames` (QR + redirect keys for uniqueness), `cascadeDeleteQRRecord`.
-- `src/lib/qr/content.ts` — 10 content types → payload string serializers (`contentToValue`).
+- `src/lib/qr/content.ts` — 10 content types → payload string serializers (`contentToValue`); `codeUrl(handle, name)` → `{origin}/{handle}/{name}`.
+- `src/lib/qr/record.ts` — `QRRecord`/`Draft` types, `makeRecord`, `isValidRecord`, `qrValueFor(record, fallback)` (effective QR payload: dynamic → `qrValue`, else `contentToValue`).
 - `src/lib/qr/style.ts` — serializable `QRStyle` ↔ qr-code-styling options (`styleToOptions`).
-- `src/components/Studio.tsx` — shared generator (content + style + preview + download + optional name/save block).
+- `src/components/Studio.tsx` — shared generator (kind selector, content + style + preview + download + optional name/save block; `qrData` prop drives the encoded payload, name/save shown only for Dynamic).
 - `src/lib/qr/name.ts` — slug validation, adjective/animal word lists, `generateCodeName`.
 
 ## Critical gotchas

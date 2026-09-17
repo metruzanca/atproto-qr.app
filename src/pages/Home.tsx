@@ -3,15 +3,16 @@ import { useNavigate } from '@solidjs/router';
 
 import { agent, profile } from '../lib/atproto/auth';
 import { authedClient, createQRRecord, listAllNames, QRNameTakenError } from '../lib/atproto/records';
-import { emptyContent } from '../lib/qr/content';
+import { codeUrl, contentToValue, emptyContent } from '../lib/qr/content';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { DEFAULT_STYLE } from '../lib/qr/style';
-import { makeRecord, type Draft } from '../lib/qr/record';
+import { makeRecord, type Draft, type QRKind } from '../lib/qr/record';
 import { Studio } from '../components/Studio';
 
 export default function Home() {
   const navigate = useNavigate();
   const [draft, setDraft] = createSignal<Draft>({ content: emptyContent('url'), style: { ...DEFAULT_STYLE } });
+  const [kind, setKind] = createSignal<QRKind>('fixed');
   const [name, setName] = createSignal('');
   const [nameError, setNameError] = createSignal('');
   const [existingKeys, setExistingKeys] = createSignal<Set<string>>(new Set());
@@ -46,6 +47,22 @@ export default function Home() {
     setNameError('');
   };
 
+  const onKindChange = (k: QRKind) => {
+    setKind(k);
+    if (k === 'dynamic' && profile() && !name()) {
+      generateName();
+    }
+  };
+
+  const qrData = () => {
+    const handle = profile()?.handle;
+    const v = name().trim();
+    if (kind() === 'dynamic') {
+      return handle && isValidSlug(v) ? codeUrl(handle, v) : '';
+    }
+    return contentToValue(draft().content);
+  };
+
   const save = async () => {
     const a = agent();
     const p = profile();
@@ -57,6 +74,10 @@ export default function Home() {
     setSaveError('');
     try {
       const record = makeRecord(draft());
+      record.kind = kind();
+      if (kind() === 'dynamic') {
+        record.qrValue = qrData();
+      }
       await createQRRecord(authedClient(a), p.did, v, record);
       setExistingKeys((prev) => new Set(prev).add(v));
       navigate(`/${p.handle}/${v}/edit`, { replace: true });
@@ -79,8 +100,8 @@ export default function Home() {
           Beautiful QR codes, designed and yours.
         </h1>
         <p class="mx-auto mt-3 max-w-2xl text-slate-600">
-          Style a QR code in seconds, download it anywhere — or sign in with your atproto account to create
-          <span class="font-semibold text-slate-800"> editable</span> codes that live in your own personal data server.
+          Style a QR code in seconds, download it anywhere — or sign in to save it as a{' '}
+          <span class="font-semibold text-slate-800">dynamic</span> code that lives in your own personal data server.
         </p>
       </section>
 
@@ -91,6 +112,17 @@ export default function Home() {
       <Studio
         draft={draft()}
         onChange={setDraft}
+        kind={kind()}
+        onKindChange={onKindChange}
+        qrData={qrData()}
+        loginHref="/login"
+        emptyHint={
+          kind() === 'dynamic'
+            ? profile()
+              ? 'Enter a name to see the dynamic QR — it encodes the link to this page, not your data.'
+              : 'Sign in to save a dynamic code — it encodes a link back to this app.'
+            : undefined
+        }
         onSave={profile() ? save : undefined}
         saving={saving()}
         name={name()}

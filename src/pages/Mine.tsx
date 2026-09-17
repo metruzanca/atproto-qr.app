@@ -12,9 +12,9 @@ import {
   type QRRecordItem,
   type RedirectItem,
 } from '../lib/atproto/records';
-import { styleToOptions } from '../lib/qr/style';
-import { contentToValue } from '../lib/qr/content';
-import type { QRRecord } from '../lib/qr/record';
+import type { QRStyle } from '../lib/qr/style';
+import { codeUrl } from '../lib/qr/content';
+import { qrValueFor, type QRRecord } from '../lib/qr/record';
 
 type Entry =
   | { kind: 'qr'; rkey: string; record: QRRecord; stamp: string }
@@ -166,24 +166,37 @@ function renderQR(
   onDelete: (rkey: string, aliases: string[] | undefined) => Promise<void>,
 ) {
   const url = `/${p.handle}/${entry.rkey}`;
+  const kind = entry.record.kind ?? 'fixed';
+  const payload = qrValueFor(entry.record, codeUrl(p.handle, entry.rkey));
   return (
     <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
       <div class="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50">
-        <RecordThumb record={entry.record} />
+        <RecordThumb payload={payload} style={entry.record.style} />
       </div>
       <div class="min-w-0 flex-1">
-        <p class="truncate text-sm font-semibold text-slate-900">{entry.rkey}</p>
+        <p class="flex items-center gap-2 truncate text-sm font-semibold text-slate-900">
+          <span class="truncate">{entry.rkey}</span>
+          <span
+            class={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+              kind === 'dynamic' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'
+            }`}
+          >
+            {kind}
+          </span>
+        </p>
         <p class="truncate text-xs text-slate-500">
-          {entry.record.content.type} · {contentToValue(entry.record.content) || '—'} · {entry.record.updatedAt.slice(0, 10)}
+          {entry.record.content.type} · {payload || '—'} · {entry.record.updatedAt.slice(0, 10)}
         </p>
       </div>
       <div class="flex shrink-0 items-center gap-1">
         <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
           View
         </A>
-        <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
-          Edit
-        </A>
+        <Show when={kind === 'dynamic'}>
+          <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
+            Edit
+          </A>
+        </Show>
         <button
           type="button"
           onClick={() => onDelete(entry.rkey, entry.record.aliases)}
@@ -239,23 +252,20 @@ function renderRedirect(
   );
 }
 
-function RecordThumb(props: { record: QRRecordItem['record'] }) {
+function RecordThumb(props: { payload: string; style: QRStyle }) {
   let container: HTMLDivElement | undefined;
 
   onMount(() => {
     if (!container) return;
-    const data = contentToValue(props.record.content);
-    if (!data) return;
+    if (!props.payload) return;
     const qr = new QRCodeStyling({
       size: 56,
-      data,
-      qrOptions: { errorCorrectionLevel: props.record.style.errorCorrectionLevel },
-      dotsOptions: { type: props.record.style.dotsType as never, color: props.record.style.dotsColor },
-      backgroundOptions: { color: props.record.style.backgroundColor },
+      data: props.payload,
+      qrOptions: { errorCorrectionLevel: props.style.errorCorrectionLevel },
+      dotsOptions: { type: props.style.dotsType as never, color: props.style.dotsColor },
+      backgroundOptions: { color: props.style.backgroundColor },
     });
     qr.append(container);
-    const svg = container.querySelector('svg');
-    svg?.setAttribute('class', 'h-14 w-14');
   });
 
   return <div ref={container} class="h-full w-full" />;

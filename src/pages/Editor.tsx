@@ -16,8 +16,8 @@ import {
   QRNameTakenError,
 } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
-import { isValidRecord, makeRecord, type Draft, type QRRecord } from '../lib/qr/record';
-import { emptyContent, contentTitle } from '../lib/qr/content';
+import { isValidRecord, makeRecord, type Draft, type QRKind, type QRRecord } from '../lib/qr/record';
+import { codeUrl, contentTitle, contentToValue, emptyContent } from '../lib/qr/content';
 import { DEFAULT_STYLE } from '../lib/qr/style';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { Studio } from '../components/Studio';
@@ -29,6 +29,7 @@ export default function Editor() {
 
   const [status, setStatus] = createSignal<'loading' | 'loaded' | 'forbidden' | 'notfound'>('loading');
   const [mode, setMode] = createSignal<'qr' | 'redirect'>('qr');
+  const [kind, setKind] = createSignal<QRKind>('fixed');
   const [redirectTarget, setRedirectTarget] = createSignal<string | null>(null);
   const [draft, setDraft] = createSignal<Draft | null>(null);
   const [existing, setExisting] = createSignal<QRRecord | null>(null);
@@ -40,6 +41,15 @@ export default function Editor() {
 
   const publicPath = () => `/${params.handle}/${params.id}`;
   const publicUrl = () => `${location.origin}${publicPath()}`;
+
+  const qrData = () => {
+    const d = draft();
+    if (!d) return '';
+    if (kind() === 'dynamic') {
+      return existing()?.qrValue ?? publicUrl();
+    }
+    return contentToValue(d.content);
+  };
 
   createEffect(async () => {
     const handle = params.handle;
@@ -68,6 +78,7 @@ export default function Editor() {
         setMode('qr');
         setRedirectTarget(null);
         setExisting(item.record);
+        setKind(item.record.kind ?? 'fixed');
         setDraft({ content: item.record.content, style: item.record.style });
         setName(id);
       } else {
@@ -79,6 +90,7 @@ export default function Editor() {
         setMode('redirect');
         setRedirectTarget(redirect.target);
         setExisting(null);
+        setKind('dynamic');
         setDraft({ content: emptyContent('url'), style: { ...DEFAULT_STYLE } });
         setName(id);
       }
@@ -125,14 +137,20 @@ export default function Editor() {
     setError('');
     try {
       const client = authedClient(a);
+      const buildRecord = (): QRRecord => {
+        const record = makeRecord(d, existing() ?? undefined);
+        record.kind = 'dynamic';
+        record.qrValue = codeUrl(p.handle, v);
+        return record;
+      };
       if (mode() === 'redirect') {
         if (v === params.id) {
-          await createQRRecord(client, p.did, params.id, makeRecord(d, undefined));
+          await createQRRecord(client, p.did, params.id, buildRecord());
           await deleteRedirectRecord(client, p.did, params.id);
           showToast('Saved as a QR code');
           navigate(`${publicPath()}/edit`, { replace: true });
         } else {
-          const record = makeRecord(d, undefined);
+          const record = buildRecord();
           record.aliases = [params.id];
           await createQRRecord(client, p.did, v, record);
           await putRedirectRecord(client, p.did, params.id, v);
@@ -146,11 +164,11 @@ export default function Editor() {
       }
 
       if (v === params.id) {
-        const record = makeRecord(d, existing() ?? undefined);
+        const record = buildRecord();
         await putQRRecord(client, p.did, params.id, record);
         showToast('Changes saved');
       } else {
-        const record = makeRecord(d, existing() ?? undefined);
+        const record = buildRecord();
         record.aliases = [...(existing()?.aliases ?? []), params.id];
         await createQRRecord(client, p.did, v, record);
         try {
@@ -243,6 +261,15 @@ export default function Editor() {
                       Redirect
                     </span>
                   </Show>
+                  <Show when={mode() === 'qr'}>
+                    <span
+                      class={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                        kind() === 'dynamic' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {kind()}
+                    </span>
+                  </Show>
                 </h1>
               </div>
               <button
@@ -262,21 +289,42 @@ export default function Editor() {
               <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 This name is currently a <span class="font-semibold">redirect</span> to{' '}
                 <span class="font-mono">{redirectTarget()}</span> — it keeps an older printed URL working. Fill in the
-                details below and save to turn it back into a real QR code.
+                details below and save to turn it back into a dynamic QR code.
               </div>
             </Show>
 
-            <Studio
-              draft={d()}
-              onChange={setDraft}
-              savedUrl={publicUrl()}
-              onSave={save}
-              saving={saving()}
-              name={name()}
-              onNameChange={onNameChange}
-              onGenerateName={generateName}
-              nameError={nameError()}
-            />
+            <Show when={kind() === 'fixed'}>
+              <div class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+                <h2 class="text-xl font-bold text-slate-900">Fixed codes can't be edited</h2>
+                <p class="mx-auto mt-2 max-w-md text-sm text-slate-600">
+                  This fixed code was saved before fixed codes became download-only. It always encodes its original
+                  data, so there's nothing to change. You can delete it, or recreate it as a dynamic code from the
+                  studio.
+                </p>
+                <A
+                  href="/"
+                  class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+                >
+                  Open the studio
+                </A>
+              </div>
+            </Show>
+
+            <Show when={kind() === 'dynamic'}>
+              <Studio
+                draft={d()}
+                onChange={setDraft}
+                kind={kind()}
+                qrData={qrData()}
+                savedUrl={publicUrl()}
+                onSave={save}
+                saving={saving()}
+                name={name()}
+                onNameChange={onNameChange}
+                onGenerateName={generateName}
+                nameError={nameError()}
+              />
+            </Show>
           </>
         )}
       </Show>

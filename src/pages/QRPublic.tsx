@@ -5,8 +5,8 @@ import { isHandle, isRecordKey } from '@atcute/lexicons/syntax';
 import { profile } from '../lib/atproto/auth';
 import { getQRRecord, getRedirectRecord } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
-import { contentTitle, contentToValue, isHttpUrl } from '../lib/qr/content';
-import { isValidRecord } from '../lib/qr/record';
+import { codeUrl, contentTitle, contentToValue, isHttpUrl } from '../lib/qr/content';
+import { isValidRecord, qrValueFor, type QRKind } from '../lib/qr/record';
 import { isValidSlug } from '../lib/qr/name';
 import type { QRStyle } from '../lib/qr/style';
 import { QRPreview } from '../components/QRPreview';
@@ -16,7 +16,7 @@ export default function QRPublic() {
   const navigate = useNavigate();
 
   const [status, setStatus] = createSignal<'loading' | 'found' | 'notfound' | 'error'>('loading');
-  const [content, setContent] = createSignal<{ type: string; title: string; value: string } | null>(null);
+  const [content, setContent] = createSignal<{ type: string; title: string; value: string; kind: QRKind } | null>(null);
   const [style, setStyle] = createSignal<QRStyle | null>(null);
   const [ownerDid, setOwnerDid] = createSignal<string | null>(null);
 
@@ -43,12 +43,18 @@ export default function QRPublic() {
         setStatus('notfound');
         return;
       }
-      const value = contentToValue(item.record.content);
+      const value = qrValueFor(item.record, codeUrl(params.handle, params.id));
+      const dataValue = contentToValue(item.record.content);
       setStyle(item.record.style);
-      setContent({ type: item.record.content.type, title: contentTitle(item.record.content), value });
+      setContent({
+        type: item.record.content.type,
+        title: contentTitle(item.record.content),
+        value,
+        kind: item.record.kind ?? 'fixed',
+      });
 
-      if (item.record.content.type === 'url' && isHttpUrl(value)) {
-        window.location.assign(value);
+      if (item.record.content.type === 'url' && isHttpUrl(dataValue)) {
+        window.location.assign(dataValue);
         return;
       }
       setStatus('found');
@@ -78,9 +84,18 @@ export default function QRPublic() {
           <div class="flex items-center justify-between">
             <div class="min-w-0">
               <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{content()!.type}</p>
-              <h1 class="mt-1 truncate text-xl font-bold text-slate-900">{content()!.title}</h1>
+              <h1 class="mt-1 flex items-center gap-2 truncate text-xl font-bold text-slate-900">
+                <span class="truncate">{content()!.title}</span>
+                <span
+                  class={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                    content()!.kind === 'dynamic' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
+                  {content()!.kind}
+                </span>
+              </h1>
             </div>
-            <Show when={isOwner()}>
+            <Show when={isOwner() && content()?.kind === 'dynamic'}>
               <a
                 href={`/${params.handle}/${params.id}/edit`}
                 class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"

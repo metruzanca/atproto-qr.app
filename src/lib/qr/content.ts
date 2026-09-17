@@ -146,6 +146,10 @@ export function contentToValue(content: Content): string {
   }
 }
 
+export function codeUrl(handle: string, name: string): string {
+  return `${location.origin}/${handle}/${name}`;
+}
+
 export function isHttpUrl(value: string): boolean {
   try {
     const url = new URL(value);
