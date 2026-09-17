@@ -23,6 +23,12 @@ export function Header() {
 
         <nav class="flex items-center gap-1">
           <A
+            href="/about"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          >
+            About
+          </A>
+          <A
             href="/codes"
             inactiveClass="hidden sm:block"
             class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
