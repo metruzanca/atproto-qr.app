@@ -17,7 +17,6 @@ export default function QRPublic() {
   const [content, setContent] = createSignal<{ type: string; title: string; value: string } | null>(null);
   const [style, setStyle] = createSignal<QRStyle | null>(null);
   const [ownerDid, setOwnerDid] = createSignal<string | null>(null);
-  const [redirect, setRedirect] = createSignal<{ value: string; countdown: number } | null>(null);
 
   const isOwner = () => profile()?.did === ownerDid();
 
@@ -42,25 +41,14 @@ export default function QRPublic() {
       setContent({ type: item.record.content.type, title: contentTitle(item.record.content), value });
 
       if (item.record.content.type === 'url' && isHttpUrl(value)) {
-        setRedirect({ value, countdown: 5 });
-      } else {
-        setStatus('found');
+        window.location.assign(value);
+        return;
       }
+      setStatus('found');
     } catch (err) {
       console.error(err);
       setStatus('notfound');
     }
-  });
-
-  createEffect(() => {
-    const r = redirect();
-    if (!r) return;
-    if (r.countdown <= 0) {
-      window.location.assign(r.value);
-      return;
-    }
-    const t = setTimeout(() => setRedirect({ value: r.value, countdown: r.countdown - 1 }), 1000);
-    return () => clearTimeout(t);
   });
 
   return (
@@ -76,28 +64,6 @@ export default function QRPublic() {
             We couldn't find this code on the owner's personal data server. It may have been deleted.
           </p>
         </div>
-      </Show>
-
-      <Show when={redirect()}>
-        {(r) => (
-          <div class="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <p class="text-sm text-slate-600">
-              This QR code redirects to
-            </p>
-            <p class="mt-2 break-all text-lg font-semibold text-sky-700">{r().value}</p>
-            <p class="mt-2 text-xs text-slate-500">Redirecting in {r().countdown}s…</p>
-            <button
-              type="button"
-              onClick={() => window.location.assign(r().value)}
-              class="mt-5 rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
-            >
-              Continue to site
-            </button>
-            <a href="/" class="mt-3 block text-sm font-medium text-slate-500 hover:text-slate-700">
-              Go back to atproto QR
-            </a>
-          </div>
-        )}
       </Show>
 
       <Show when={status() === 'found' && content() && style()}>

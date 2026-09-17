@@ -19,7 +19,8 @@ export default function Editor() {
   const [error, setError] = createSignal('');
   const [saving, setSaving] = createSignal(false);
 
-  const publicUrl = () => `/${params.handle}/${params.id}`;
+  const publicPath = () => `/${params.handle}/${params.id}`;
+  const publicUrl = () => `${location.origin}${publicPath()}`;
   const did = () => profile()?.did;
 
   createEffect(async () => {
@@ -68,7 +69,7 @@ export default function Editor() {
     try {
       const record = makeRecord(d, existing() as never);
       await putQRRecord(authedClient(a), p.did, params.id, record);
-      navigate(publicUrl(), { replace: true });
+      navigate(publicPath(), { replace: true });
     } catch (err) {
       console.error(err);
       setError('Could not save changes. Please try again.');
