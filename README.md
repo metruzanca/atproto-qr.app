@@ -134,6 +134,25 @@ VITE_PUBLIC_ORIGIN=https://atproto-qr.app
 
 so the generated OAuth metadata and redirect URI match the deployed origin. The app also works on any static host — `dist/` is fully self-contained.
 
+### CORS proxy for logo images
+
+To embed a logo, the QR renderer fetches the image cross-origin and draws it
+into a canvas, which requires the host to send CORS headers. Hosts that
+don't (e.g. `zanca.dev/icon.png`) get blocked by the browser. The app routes
+external image URLs through a CORS proxy (`proxyImageUrl` in
+`src/lib/qr/style.ts`):
+
+- By default it falls back to the free public proxy
+  `images.weserv.nl` (`Access-Control-Allow-Origin: *`), so logos work out of
+  the box — but that means external image URLs go through a third party.
+- Self-host your own by setting the build-time variable
+  `VITE_IMAGE_PROXY` to your proxy's origin (e.g. `https://cors-proxy.example.com`).
+
+A portable, zero-dependency proxy lives in [`proxy/`](proxy/README.md)
+(single Node ≥ 18 file + Dockerfile, runs anywhere). Lock it down with
+`ALLOWED_ORIGINS=http://127.0.0.1:3000,https://atproto-qr.app`; unset, it
+logs a warning and allows any origin.
+
 ## Privacy
 
 This site has no backend: no database, no accounts, no logs, no analytics. The only server ever involved is your PDS, and only for signed-in features (saving, listing, editing, deleting). If the site itself goes down, your codes, links, and the ability to view them remain yours.

@@ -36,6 +36,21 @@ export const DEFAULT_STYLE: QRStyle = {
 
 export const ERROR_CORRECTION_LEVELS: ('L' | 'M' | 'Q' | 'H')[] = ['L', 'M', 'Q', 'H'];
 
+const PROXY_FALLBACK_ORIGIN = 'https://images.weserv.nl';
+
+function proxyOrigin(): string {
+  return import.meta.env.VITE_IMAGE_PROXY || PROXY_FALLBACK_ORIGIN;
+}
+
+export function proxyImageUrl(url: string | null): string | null {
+  if (!url) return null;
+  if (/^(data|blob):/i.test(url)) return url;
+  const origin = proxyOrigin();
+  if (url.startsWith(origin) || url.startsWith(PROXY_FALLBACK_ORIGIN)) return url;
+  if (!/^https?:\/\//i.test(url)) return url;
+  return `${origin}/?url=${encodeURIComponent(url)}`;
+}
+
 export function styleToOptions(style: QRStyle, data: string): RecursivePartial<Options> {
   return {
     size: style.size,
@@ -59,7 +74,7 @@ export function styleToOptions(style: QRStyle, data: string): RecursivePartial<O
         }
       : undefined,
     backgroundOptions: { color: style.backgroundColor, margin: style.backgroundMargin },
-    image: style.image ?? undefined,
+    image: proxyImageUrl(style.image) ?? undefined,
     imageOptions: {
       margin: style.imageMargin,
       imageSize: style.imageSize > 1 ? style.imageSize / 100 : style.imageSize,
