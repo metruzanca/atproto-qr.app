@@ -49,35 +49,27 @@ Point your app at it by setting `VITE_IMAGE_PROXY` to this proxy's origin at
 build time (e.g. `https://cors-proxy.example.com`). See the project
 [README](../README.md) for the frontend side.
 
-### Docker
-
-```bash
-docker build -t atproto-qr-cors-proxy .
-docker run -p 8080:8080 \
-  -e ALLOWED_ORIGINS=http://127.0.0.1:3000,https://atproto-qr.app \
-  atproto-qr-cors-proxy
-```
+Run it anywhere Node ≥ 18 runs. The directory ships a `package.json` with a
+`start` script (`node index.mjs`), so platforms that expect `npm start`
+(Railway, Render, Fly.io) work with no extra config. Want a container? Wrap
+it in any node image — e.g. `FROM node:20-alpine`, `CMD ["node", "index.mjs"]`
+— or just run it on a VPS.
 
 ### Railway
 
-Create a service from the repo and set its **root directory** to `proxy/`.
-Set the `ALLOWED_ORIGINS` variable, then generate a domain.
+Create a service from the repo, set its **root directory** to `proxy/`, and
+set the `ALLOWED_ORIGINS` variable (no Dockerfile needed — Railpack detects
+Node and runs `npm start`). Generate a domain.
 
-### Fly.io
+### Render / Fly.io
 
-`fly launch` from this directory with `build.include` = `[index.mjs]` (or
-use the Dockerfile), and set `ALLOWED_ORIGINS`.
-
-### Render
-
-Create a web service from this directory, build command `npm i -g pnpm` is
-not needed — just start command `node index.mjs`, or use the Dockerfile.
-Set `ALLOWED_ORIGINS`.
+Point a web service at this directory with start command `npm start` (or
+`node index.mjs`), and set `ALLOWED_ORIGINS`.
 
 ### Any VPS
 
 ```bash
-node index.mjs
+npm start   # or: node index.mjs
 ```
 
 Put it behind your reverse proxy (Caddy/Nginx) and set `ALLOWED_ORIGINS`.
