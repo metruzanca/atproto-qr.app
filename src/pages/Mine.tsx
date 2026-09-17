@@ -42,7 +42,16 @@ export default function Mine() {
       target: r.target,
       stamp: r.createdAt,
     }));
-    return [...qrs, ...rds].sort((a, b) => b.stamp.localeCompare(a.stamp));
+    return [...qrs, ...rds].sort((a, b) => {
+      const rankDiff = kindRank(a) - kindRank(b);
+      if (rankDiff !== 0) return rankDiff;
+      return b.stamp.localeCompare(a.stamp);
+    });
+  };
+
+  const kindRank = (entry: Entry): number => {
+    if (entry.kind === 'redirect') return 1;
+    return entry.record.kind === 'dynamic' ? 0 : 2;
   };
 
   const load = async () => {
