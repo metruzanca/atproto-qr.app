@@ -67,7 +67,7 @@ export default function Login() {
             <p class="text-sm text-slate-600">
               You're signed in as <span class="font-semibold text-slate-900">{p().handle}</span>.
             </p>
-            <a href="/mine" class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white">
+            <a href="/codes" class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white">
               Go to my QR codes
             </a>
           </div>

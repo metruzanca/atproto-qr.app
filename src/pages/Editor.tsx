@@ -8,6 +8,7 @@ import { resolveHandle } from '../lib/atproto/resolve';
 import { isValidRecord, makeRecord, type Draft } from '../lib/qr/record';
 import { contentTitle } from '../lib/qr/content';
 import { Studio } from '../components/Studio';
+import { showToast } from '../components/Toast';
 
 export default function Editor() {
   const params = useParams<{ handle: string; id: string }>();
@@ -69,7 +70,7 @@ export default function Editor() {
     try {
       const record = makeRecord(d, existing() as never);
       await putQRRecord(authedClient(a), p.did, params.id, record);
-      navigate(publicPath(), { replace: true });
+      showToast('Changes saved');
     } catch (err) {
       console.error(err);
       setError('Could not save changes. Please try again.');
@@ -85,7 +86,7 @@ export default function Editor() {
     if (!confirm('Delete this QR code? This removes the record from your PDS and breaks its URL.')) return;
     try {
       await deleteQRRecord(authedClient(a), p.did, params.id);
-      navigate('/mine');
+      navigate('/codes');
     } catch (err) {
       console.error(err);
       alert('Could not delete the record.');

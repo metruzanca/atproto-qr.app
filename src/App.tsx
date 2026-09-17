@@ -3,6 +3,7 @@ import { Route, Router } from '@solidjs/router';
 
 import { initAuth } from './lib/atproto/auth';
 import { Header } from './components/Header';
+import { ToastContainer } from './components/Toast';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Callback from './pages/Callback';
@@ -15,6 +16,7 @@ function Root(props: { children?: JSX.Element }) {
     <div class="flex min-h-screen flex-col bg-slate-50 text-slate-900">
       <Header />
       <div class="flex-1">{props.children}</div>
+      <ToastContainer />
       <footer class="border-t border-slate-200 bg-white">
         <div class="mx-auto max-w-6xl px-4 py-6 text-center text-xs text-slate-500">
           Your QR codes are stored as records in your own atproto personal data server (PDS). We can't edit, hide, or
@@ -35,7 +37,7 @@ const App = () => {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/oauth/callback" component={Callback} />
-      <Route path="/mine" component={Mine} />
+      <Route path="/codes" component={Mine} />
       <Route path="/:handle/:id" component={QRPublic} />
       <Route path="/:handle/:id/edit" component={Editor} />
     </Router>

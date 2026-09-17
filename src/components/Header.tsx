@@ -23,7 +23,7 @@ export function Header() {
 
         <nav class="flex items-center gap-1">
           <A
-            href="/mine"
+            href="/codes"
             inactiveClass="hidden sm:block"
             class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
           >
@@ -44,7 +44,7 @@ export function Header() {
             {(p) => (
               <div class="flex items-center gap-2">
                 <A
-                  href="/mine"
+                  href="/codes"
                   class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 hover:bg-slate-100"
                 >
                   <img

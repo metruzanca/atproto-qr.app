@@ -10,7 +10,7 @@ export default function Callback() {
   onMount(async () => {
     try {
       await finalizeOAuthCallback();
-      navigate('/mine', { replace: true });
+      navigate('/codes', { replace: true });
     } catch (err) {
       console.error(err);
       setError('Sign-in failed. The authorization may have expired — please try again.');

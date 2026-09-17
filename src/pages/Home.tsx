@@ -1,5 +1,4 @@
 import { createSignal, Show } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
 
 import { agent, profile } from '../lib/atproto/auth';
 import { authedClient, putQRRecord } from '../lib/atproto/records';
@@ -8,9 +7,9 @@ import { emptyContent } from '../lib/qr/content';
 import { DEFAULT_STYLE } from '../lib/qr/style';
 import { makeRecord, type Draft } from '../lib/qr/record';
 import { Studio } from '../components/Studio';
+import { showToast } from '../components/Toast';
 
 export default function Home() {
-  const navigate = useNavigate();
   const [draft, setDraft] = createSignal<Draft>({ content: emptyContent('url'), style: { ...DEFAULT_STYLE } });
   const [saving, setSaving] = createSignal(false);
   const [saveError, setSaveError] = createSignal('');
@@ -25,10 +24,11 @@ export default function Home() {
       const rkey = randomRkey();
       const record = makeRecord(draft());
       await putQRRecord(authedClient(a), p.did, rkey, record);
-      navigate(`/${p.handle}/${rkey}/edit`, { replace: true });
+      showToast(`Saved — ${location.origin}/${p.handle}/${rkey}`);
     } catch (err) {
       console.error(err);
       setSaveError('Could not save to your PDS. Please try again.');
+    } finally {
       setSaving(false);
     }
   };
