@@ -13,7 +13,7 @@ import {
   type RedirectItem,
 } from '../lib/atproto/records';
 import { styleToOptions } from '../lib/qr/style';
-import { contentTitle, contentToValue } from '../lib/qr/content';
+import { contentToValue } from '../lib/qr/content';
 
 export default function Mine() {
   const navigate = useNavigate();
@@ -129,9 +129,9 @@ export default function Mine() {
                           <RecordThumb record={item.record} />
                         </div>
                         <div class="min-w-0 flex-1">
-                          <p class="truncate text-sm font-semibold text-slate-900">{contentTitle(item.record.content)}</p>
+                          <p class="truncate text-sm font-semibold text-slate-900">{item.rkey}</p>
                           <p class="truncate text-xs text-slate-500">
-                            {item.record.content.type} · {item.record.updatedAt.slice(0, 10)}
+                            {item.record.content.type} · {contentToValue(item.record.content) || '—'} · {item.record.updatedAt.slice(0, 10)}
                           </p>
                         </div>
                         <div class="flex shrink-0 items-center gap-1">
