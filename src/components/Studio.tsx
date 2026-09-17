@@ -176,14 +176,8 @@ export function Studio(props: Props) {
             </button>
           </Show>
 
-          <Show when={props.onSave && props.kind === 'fixed'}>
-            <div class="mt-5 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              Fixed codes can't be saved. Download the QR image to keep it.
-            </div>
-          </Show>
-
           <Show when={data()}>
-            <div class="mt-5 flex flex-wrap items-center gap-2">
+            <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
                 onClick={() => download('png')}
