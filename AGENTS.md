@@ -25,7 +25,7 @@ pnpm exec tsc --noEmit   # typecheck (there is no lint script)
 
 ## Routes
 
-- `/` — Studio (Home): the generator; when signed in shows a Code type (Fixed/Dynamic) selector. Name field + Generate + "Save changes" appear only for Dynamic (creates a record, then navigates to `/edit`). Fixed is download-only.
+- `/` — Studio (Home): the generator; when signed in shows a Code type (Fixed/Dynamic) selector. Name field + Generate + "Save changes" appear only for Dynamic (creates a record, then navigates to `/edit`). Fixed is download-only. In Fixed mode the draft (content + style) is serialized into the `?d=` query param (`draftToParam`/`draftFromParam` in `src/lib/qr/record.ts`) so the state survives reloads, history, and bookmarks; Dynamic mode stops syncing and the param clears naturally on save.
 - `/login`, `/oauth/callback` — OAuth flow.
 - `/codes` — list the user's saved QR records (was `/mine`).
 - `/:handle/:id` — public page: URL-type instantly redirects to the data target; other types render the styled QR (dynamic codes render their stored `qrValue`, i.e. the app URL). Follows redirect records.

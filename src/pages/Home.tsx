@@ -6,12 +6,18 @@ import { authedClient, createQRRecord, listAllNames, QRNameTakenError } from '..
 import { codeUrl, contentToValue, emptyContent } from '../lib/qr/content';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { DEFAULT_STYLE } from '../lib/qr/style';
-import { makeRecord, type Draft, type QRKind } from '../lib/qr/record';
+import { draftFromParam, draftToParam, makeRecord, type Draft, type QRKind } from '../lib/qr/record';
 import { Studio } from '../components/Studio';
+
+function readDraftFromUrl(): Draft | null {
+  const encoded = new URLSearchParams(location.search).get('d');
+  if (!encoded) return null;
+  return draftFromParam(encoded);
+}
 
 export default function Home() {
   const navigate = useNavigate();
-  const [draft, setDraft] = createSignal<Draft>({ content: emptyContent('url'), style: { ...DEFAULT_STYLE } });
+  const [draft, setDraft] = createSignal<Draft>(readDraftFromUrl() ?? { content: emptyContent('url'), style: { ...DEFAULT_STYLE } });
   const [kind, setKind] = createSignal<QRKind>('fixed');
   const [name, setName] = createSignal('');
   const [nameError, setNameError] = createSignal('');
@@ -26,6 +32,15 @@ export default function Home() {
     listAllNames(authedClient(a), p.did)
       .then((keys) => setExistingKeys(new Set(keys)))
       .catch((err) => console.warn('failed to load existing keys:', err));
+  });
+
+  createEffect(() => {
+    if (kind() !== 'fixed') return;
+    const encoded = draftToParam(draft());
+    const params = new URLSearchParams(location.search);
+    if (params.get('d') === encoded) return;
+    params.set('d', encoded);
+    history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
   });
 
   const validateName = (value: string): string => {
