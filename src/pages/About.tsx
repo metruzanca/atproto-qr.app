@@ -130,8 +130,14 @@ export default function About() {
             <p>
               No — and not because we promise not to look, but because there's nothing to look at. This site has no
               backend, no database, and no analytics. When you save a code, your browser talks to your PDS directly.
-              Neither the traffic nor the content ever passes through a server we control. The only party that can read
-              your records is whoever controls your PDS — which is you, or a provider you picked.
+              Neither the traffic nor the content ever passes through a server we control.
+            </p>
+            <p class="mt-2">
+              One honest caveat: "no analytics" is literal — this site has no tracking of any kind. But atproto itself
+              is a public network. The moment you save a code, its record is broadcast to relays and the public
+              firehose, and anyone can query the network for every record of type{' '}
+              <span class="font-mono">app.atproto-qr.qr</span> — content, styling, and all. That's how the protocol
+              works, not a choice we made, and it's the flip side of data you can take anywhere.
             </p>
           </Disclosure>
           <Disclosure summary="So the only server involved is mine?">
