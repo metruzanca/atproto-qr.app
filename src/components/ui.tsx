@@ -26,11 +26,13 @@ export function Textarea(props: JSX.TextareaHTMLAttributes<HTMLTextAreaElement>)
 }
 
 export function Select(props: JSX.SelectHTMLAttributes<HTMLSelectElement> & { options: { value: string; label: string }[] }) {
-  const [local, rest] = splitProps(props, ['options', 'class']);
+  const [local, rest] = splitProps(props, ['options', 'class', 'value']);
   return (
-    <select {...rest} class={`${inputClass} ${local.class ?? ''}`}>
+    <select {...rest} value={local.value} class={`${inputClass} ${local.class ?? ''}`}>
       {local.options.map((o) => (
-        <option value={o.value}>{o.label}</option>
+        <option value={o.value} selected={o.value === local.value}>
+          {o.label}
+        </option>
       ))}
     </select>
   );

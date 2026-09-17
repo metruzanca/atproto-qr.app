@@ -10,8 +10,8 @@ export function Header() {
     <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
       <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <A href="/" class="flex items-center gap-2 font-bold text-slate-900">
-          <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-white">
-            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 12v4a1 1 0 0 1-1 1h-4" />
               <path d="M17 3h2a2 2 0 0 1 2 2v2" />
               <path d="M17 8V7" />
@@ -19,7 +19,7 @@ export function Header() {
               <path d="M3 7V5a2 2 0 0 1 2-2h2" />
               <path d="M7 17h.01" />
               <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-              <rect x="7" y="7" width="5" height="5" rx="1" />
+              <rect x="7" y="7" width="5" height="5" rx="1" fill="currentColor" stroke="none" />
             </svg>
           </span>
           <span>atproto<span class="text-sky-600">QR</span></span>
