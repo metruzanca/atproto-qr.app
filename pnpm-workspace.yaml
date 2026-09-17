@@ -1,0 +1,5 @@
+allowBuilds:
+  '@tailwindcss/oxide': true
+  esbuild: true
+patchedDependencies:
+  '@atcute/oauth-browser-client': patches/@atcute__oauth-browser-client.patch

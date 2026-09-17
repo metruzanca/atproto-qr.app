@@ -1,0 +1,22 @@
+diff --git a/dist/dpop.js b/dist/dpop.js
+index e84509d894854961a15b584ef1ce4e9047c04c85..dbd5f4576e27520f38345f0888bee445bbb6e74b 100644
+--- a/dist/dpop.js
++++ b/dist/dpop.js
+@@ -118,6 +118,17 @@ const isUseDpopNonceError = async (response, isAuthServer) => {
+                 return wwwAuth.includes('error="use_dpop_nonce"');
+             }
+         }
++        // browsers do not expose WWW-Authenticate over CORS, so fall back to
++        // checking the JSON body when the header is unavailable
++        if ((response.status === 401 || response.status === 400) && extractContentType(response.headers) === 'application/json') {
++            try {
++                const json = await response.clone().json();
++                return typeof json === 'object' && json?.['error'] === 'use_dpop_nonce';
++            }
++            catch {
++                return false;
++            }
++        }
+     }
+     if (isAuthServer === undefined || isAuthServer === true) {
+         if (response.status === 400 && extractContentType(response.headers) === 'application/json') {
