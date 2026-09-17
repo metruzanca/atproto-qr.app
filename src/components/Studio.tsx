@@ -268,7 +268,7 @@ export function Studio(props: Props) {
 
       <ConfirmDialog
         open={showUnlockModal()}
-        title="Edit fixed code data?"
+        title="Edit QR Code data?"
         message="Changes to data will result in a new image."
         confirmLabel="Confirm"
         onConfirm={() => {

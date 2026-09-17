@@ -6,13 +6,13 @@ import { authedClient, createQRRecord, listAllNames, QRNameTakenError } from '..
 import { codeUrl, contentToValue, emptyContent } from '../lib/qr/content';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { DEFAULT_STYLE } from '../lib/qr/style';
-import { draftFromParam, draftToParam, makeRecord, type Draft, type QRKind } from '../lib/qr/record';
+import { draftFromParams, draftToParams, makeRecord, type Draft, type QRKind } from '../lib/qr/record';
 import { Studio } from '../components/Studio';
 
 function readDraftFromUrl(): Draft | null {
-  const encoded = new URLSearchParams(location.search).get('d');
-  if (!encoded) return null;
-  return draftFromParam(encoded);
+  const params = new URLSearchParams(location.search);
+  if (params.toString() === '') return null;
+  return draftFromParams(params);
 }
 
 export default function Home() {
@@ -36,11 +36,11 @@ export default function Home() {
 
   createEffect(() => {
     if (kind() !== 'fixed') return;
-    const encoded = draftToParam(draft());
-    const params = new URLSearchParams(location.search);
-    if (params.get('d') === encoded) return;
-    params.set('d', encoded);
-    history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+    const params = draftToParams(draft());
+    const current = new URLSearchParams(location.search);
+    if (current.toString() === params.toString()) return;
+    const qs = params.toString();
+    history.replaceState(null, '', qs ? `${location.pathname}?${qs}` : location.pathname);
   });
 
   const validateName = (value: string): string => {

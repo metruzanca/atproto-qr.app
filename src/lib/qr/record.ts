@@ -1,4 +1,4 @@
-import { contentToValue, CONTENT_TYPES, type Content, type ContentType } from './content';
+import { contentToValue, CONTENT_TYPES, defaultFields, type Content, type ContentType } from './content';
 import { DEFAULT_STYLE, type QRStyle } from './style';
 
 export const COLLECTION = 'app.atproto-qr.qr';
@@ -56,67 +56,59 @@ export function isValidRecord(value: unknown): value is QRRecord {
   );
 }
 
-export function draftToParam(draft: Draft): string {
-  return JSON.stringify({ content: draft.content, style: draft.style });
+export function draftToParams(draft: Draft): URLSearchParams {
+  const params = new URLSearchParams();
+  const { type, fields } = draft.content;
+  const defaults = defaultFields(type);
+
+  if (type !== 'url') {
+    params.set('t', type);
+  }
+
+  for (const key of Object.keys(defaults)) {
+    const value = fields[key] ?? defaults[key];
+    if (value !== defaults[key]) {
+      params.set(key, String(value));
+    }
+  }
+
+  for (const key of Object.keys(DEFAULT_STYLE) as (keyof QRStyle)[]) {
+    if (draft.style[key] !== DEFAULT_STYLE[key]) {
+      params.set(key, String(draft.style[key]));
+    }
+  }
+
+  return params;
 }
 
-export function draftFromParam(value: string): Draft | null {
-  try {
-    const raw: unknown = JSON.parse(value);
-    if (typeof raw !== 'object' || raw === null) return null;
-    const { content, style } = raw as { content?: unknown; style?: unknown };
-    if (typeof content !== 'object' || content === null) return null;
-    const { type, fields } = content as { type?: unknown; fields?: unknown };
-    if (typeof type !== 'string' || !CONTENT_TYPES.some((t) => t.type === type)) return null;
-    if (typeof fields !== 'object' || fields === null) return null;
-    return {
-      content: { type: type as ContentType, fields: { ...(fields as Record<string, unknown>) } },
-      style: normalizeStyle(style),
-    };
-  } catch {
-    return null;
+export function draftFromParams(params: URLSearchParams): Draft | null {
+  const type = (params.get('t') ?? 'url') as ContentType;
+  if (!CONTENT_TYPES.some((c) => c.type === type)) return null;
+
+  const defaults = defaultFields(type);
+  const fields: Record<string, unknown> = {};
+  for (const key of Object.keys(defaults)) {
+    const raw = params.get(key);
+    fields[key] = raw === null ? defaults[key] : coerceValue(defaults[key], raw);
   }
+
+  const style: QRStyle = { ...DEFAULT_STYLE };
+  const styleRecord = style as unknown as Record<string, unknown>;
+  for (const key of Object.keys(DEFAULT_STYLE)) {
+    const raw = params.get(key);
+    if (raw !== null) {
+      styleRecord[key] = coerceValue(style[key as keyof QRStyle], raw);
+    }
+  }
+
+  return { content: { type, fields }, style };
 }
 
-function normalizeStyle(style: unknown): QRStyle {
-  const out: QRStyle = { ...DEFAULT_STYLE };
-  if (typeof style !== 'object' || style === null) return out;
-  const s = style as Record<string, unknown>;
-  const num = (v: unknown): number | undefined =>
-    typeof v === 'number' && Number.isFinite(v) ? v : undefined;
-  const str = (v: unknown): string | undefined => (typeof v === 'string' ? v : undefined);
-
-  const size = num(s.size);
-  if (size !== undefined) out.size = size;
-  if (s.shape === 'square' || s.shape === 'circle') out.shape = s.shape;
-  const dotsType = str(s.dotsType);
-  if (dotsType !== undefined) out.dotsType = dotsType;
-  const dotsColor = str(s.dotsColor);
-  if (dotsColor !== undefined) out.dotsColor = dotsColor;
-  if (s.cornersSquareType === null || str(s.cornersSquareType) !== undefined)
-    out.cornersSquareType = s.cornersSquareType as string | null;
-  if (s.cornersSquareColor === null || str(s.cornersSquareColor) !== undefined)
-    out.cornersSquareColor = s.cornersSquareColor as string | null;
-  if (s.cornersDotType === null || str(s.cornersDotType) !== undefined)
-    out.cornersDotType = s.cornersDotType as string | null;
-  if (s.cornersDotColor === null || str(s.cornersDotColor) !== undefined)
-    out.cornersDotColor = s.cornersDotColor as string | null;
-  const backgroundColor = str(s.backgroundColor);
-  if (backgroundColor !== undefined) out.backgroundColor = backgroundColor;
-  const backgroundMargin = num(s.backgroundMargin);
-  if (backgroundMargin !== undefined) out.backgroundMargin = backgroundMargin;
-  if (s.image === null || str(s.image) !== undefined) out.image = s.image as string | null;
-  const imageMargin = num(s.imageMargin);
-  if (imageMargin !== undefined) out.imageMargin = imageMargin;
-  const imageSize = num(s.imageSize);
-  if (imageSize !== undefined) out.imageSize = imageSize;
-  if (
-    s.errorCorrectionLevel === 'L' ||
-    s.errorCorrectionLevel === 'M' ||
-    s.errorCorrectionLevel === 'Q' ||
-    s.errorCorrectionLevel === 'H'
-  ) {
-    out.errorCorrectionLevel = s.errorCorrectionLevel;
+function coerceValue(defaultValue: unknown, raw: string): unknown {
+  if (typeof defaultValue === 'boolean') return raw === 'true';
+  if (typeof defaultValue === 'number') {
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : defaultValue;
   }
-  return out;
+  return raw;
 }
