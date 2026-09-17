@@ -217,7 +217,7 @@ function renderRedirect(
           {entry.rkey} → {entry.target}
         </p>
         <p class="truncate text-xs text-slate-500">
-          {entry.stamp ? entry.stamp.slice(0, 10) : ''} · keeps old printed URLs working
+          {entry.stamp ? entry.stamp.slice(0, 10) : ''} · keeps old printed QR Codes working
         </p>
       </div>
       <div class="flex shrink-0 items-center gap-1">
@@ -254,6 +254,8 @@ function RecordThumb(props: { record: QRRecordItem['record'] }) {
       backgroundOptions: { color: props.record.style.backgroundColor },
     });
     qr.append(container);
+    const svg = container.querySelector('svg');
+    svg?.setAttribute('class', 'h-14 w-14');
   });
 
   return <div ref={container} class="h-full w-full" />;
