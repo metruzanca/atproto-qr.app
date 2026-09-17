@@ -3,9 +3,19 @@ import { A, useNavigate, useParams } from '@solidjs/router';
 import { isHandle, isRecordKey } from '@atcute/lexicons/syntax';
 
 import { agent, authReady, profile } from '../lib/atproto/auth';
-import { authedClient, deleteQRRecord, getQRRecord, putQRRecord } from '../lib/atproto/records';
+import {
+  authedClient,
+  cascadeDeleteQRRecord,
+  createQRRecord,
+  getQRRecord,
+  listAllNames,
+  putQRRecord,
+  putRedirectRecord,
+  QRNameTakenError,
+} from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
-import { isValidRecord, makeRecord, type Draft } from '../lib/qr/record';
+import { isValidRecord, makeRecord, type Draft, type QRRecord } from '../lib/qr/record';
+import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { contentTitle } from '../lib/qr/content';
 import { Studio } from '../components/Studio';
 import { showToast } from '../components/Toast';
@@ -16,13 +26,15 @@ export default function Editor() {
 
   const [status, setStatus] = createSignal<'loading' | 'loaded' | 'forbidden' | 'notfound'>('loading');
   const [draft, setDraft] = createSignal<Draft | null>(null);
-  const [existing, setExisting] = createSignal<{ createdAt: string } | null>(null);
+  const [existing, setExisting] = createSignal<QRRecord | null>(null);
+  const [name, setName] = createSignal('');
+  const [nameError, setNameError] = createSignal('');
+  const [existingNames, setExistingNames] = createSignal<Set<string>>(new Set());
   const [error, setError] = createSignal('');
   const [saving, setSaving] = createSignal(false);
 
   const publicPath = () => `/${params.handle}/${params.id}`;
   const publicUrl = () => `${location.origin}${publicPath()}`;
-  const did = () => profile()?.did;
 
   createEffect(async () => {
     const handle = params.handle;
@@ -51,8 +63,12 @@ export default function Editor() {
         setStatus('notfound');
         return;
       }
-      setExisting({ createdAt: item.record.createdAt });
+      setExisting(item.record);
       setDraft({ content: item.record.content, style: item.record.style });
+      setName(id);
+      setNameError('');
+      const names = await listAllNames(authedClient(a), p.did);
+      setExistingNames(new Set(names));
       setStatus('loaded');
     } catch (err) {
       console.error(err);
@@ -60,20 +76,63 @@ export default function Editor() {
     }
   });
 
+  const validateName = (value: string): string => {
+    if (!value) return 'Enter a name';
+    if (!isValidSlug(value)) return 'Use lowercase letters, numbers, and hyphens';
+    if (value !== params.id && existingNames().has(value)) {
+      return `You already have a code named "${value}"`;
+    }
+    return '';
+  };
+
+  const onNameChange = (value: string) => {
+    const v = value.toLowerCase();
+    setName(v);
+    setNameError(validateName(v));
+  };
+
+  const generateName = () => {
+    const v = generateCodeName(existingNames());
+    setName(v);
+    setNameError('');
+  };
+
   const save = async () => {
     const d = draft();
     const a = agent();
     const p = profile();
-    if (!d || !a || !p) return;
+    const v = name().trim();
+    const err = validateName(v);
+    setNameError(err);
+    if (!d || !a || !p || err) return;
     setSaving(true);
     setError('');
     try {
-      const record = makeRecord(d, existing() as never);
-      await putQRRecord(authedClient(a), p.did, params.id, record);
-      showToast('Changes saved');
+      if (v === params.id) {
+        const record = makeRecord(d, existing() ?? undefined);
+        await putQRRecord(authedClient(a), p.did, params.id, record);
+        showToast('Changes saved');
+      } else {
+        const record = makeRecord(d, existing() ?? undefined);
+        record.aliases = [...(existing()?.aliases ?? []), params.id];
+        await createQRRecord(authedClient(a), p.did, v, record);
+        try {
+          await putRedirectRecord(authedClient(a), p.did, params.id, v);
+        } catch (renameErr) {
+          await cascadeDeleteQRRecord(authedClient(a), p.did, v, []).catch(() => {});
+          throw renameErr;
+        }
+        setExistingNames((prev) => new Set(prev).add(v));
+        showToast(`Renamed to ${v}`);
+        navigate(`/${p.handle}/${v}/edit`, { replace: true });
+      }
     } catch (err) {
-      console.error(err);
-      setError('Could not save changes. Please try again.');
+      if (err instanceof QRNameTakenError) {
+        setNameError(err.message);
+      } else {
+        console.error(err);
+        setError('Could not save changes. Please try again.');
+      }
     } finally {
       setSaving(false);
     }
@@ -83,9 +142,9 @@ export default function Editor() {
     const a = agent();
     const p = profile();
     if (!a || !p) return;
-    if (!confirm('Delete this QR code? This removes the record from your PDS and breaks its URL.')) return;
+    if (!confirm('Delete this QR code? This removes the record and all of its redirect records from your PDS, breaking every printed URL for it.')) return;
     try {
-      await deleteQRRecord(authedClient(a), p.did, params.id);
+      await cascadeDeleteQRRecord(authedClient(a), p.did, params.id, existing()?.aliases ?? []);
       navigate('/codes');
     } catch (err) {
       console.error(err);
@@ -128,30 +187,30 @@ export default function Editor() {
                 </p>
                 <h1 class="truncate text-2xl font-bold text-slate-900">{params.handle}/{params.id}</h1>
               </div>
-              <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={save}
-                  disabled={saving()}
-                  class="rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
-                >
-                  {saving() ? 'Saving…' : 'Save changes'}
-                </button>
-                <button
-                  type="button"
-                  onClick={remove}
-                  class="rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50"
-                >
-                  Delete
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={remove}
+                class="rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50"
+              >
+                Delete
+              </button>
             </div>
 
             <Show when={error()}>
               <p class="mb-4 text-sm text-red-600">{error()}</p>
             </Show>
 
-            <Studio draft={d()} onChange={setDraft} savedUrl={publicUrl()} />
+            <Studio
+              draft={d()}
+              onChange={setDraft}
+              savedUrl={publicUrl()}
+              onSave={save}
+              saving={saving()}
+              name={name()}
+              onNameChange={onNameChange}
+              onGenerateName={generateName}
+              nameError={nameError()}
+            />
           </>
         )}
       </Show>

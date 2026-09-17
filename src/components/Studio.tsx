@@ -6,6 +6,7 @@ import { contentToValue } from '../lib/qr/content';
 import { QRPreview } from './QRPreview';
 import { ContentFields } from './ContentFields';
 import { StyleControls } from './StyleControls';
+import { TextInput } from './ui';
 
 interface Props {
   draft: Draft;
@@ -14,6 +15,10 @@ interface Props {
   onSave?: () => Promise<void> | void;
   saving?: boolean;
   savedUrl?: string | null;
+  name?: string;
+  onNameChange?: (name: string) => void;
+  onGenerateName?: () => void;
+  nameError?: string;
 }
 
 export function Studio(props: Props) {
@@ -67,11 +72,37 @@ export function Studio(props: Props) {
           </div>
 
           <Show when={props.onSave}>
+            <div class="mt-5">
+              <div class="flex items-end gap-2">
+                <div class="flex-1">
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Name
+                  </label>
+                  <TextInput
+                    placeholder="happy-otter"
+                    spellcheck={false}
+                    value={props.name ?? ''}
+                    onInput={(e) => props.onNameChange?.(e.currentTarget.value)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => props.onGenerateName?.()}
+                  class="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                >
+                  Generate
+                </button>
+              </div>
+              <Show when={props.nameError}>
+                <p class="mt-1 text-xs text-red-600">{props.nameError}</p>
+              </Show>
+            </div>
+
             <button
               type="button"
               onClick={() => props.onSave?.()}
-              disabled={!data() || props.saving}
-              class="mt-5 w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
+              disabled={!data() || props.saving || Boolean(props.nameError)}
+              class="mt-4 w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
             >
               {props.saving ? 'Saving…' : 'Save changes'}
             </button>

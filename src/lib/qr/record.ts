@@ -9,6 +9,7 @@ export interface QRRecord {
   style: QRStyle;
   createdAt: string;
   updatedAt: string;
+  aliases?: string[];
 }
 
 export interface Draft {
@@ -24,6 +25,7 @@ export function makeRecord(draft: Draft, existing?: QRRecord): QRRecord {
     style: draft.style,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
+    aliases: existing?.aliases ?? [],
   };
 }
 

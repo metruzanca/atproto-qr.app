@@ -204,6 +204,16 @@ export default function About() {
               you can always move your data to a server you control instead.
             </p>
           </Disclosure>
+          <Disclosure summary="What happens to my URL when I rename a code?">
+            <p>
+              Renaming a code keeps the old link working. When you rename, we write a small
+              <span class="font-semibold text-slate-700"> redirect record</span> at the old name that points to the new
+              one, so anything already printed keeps scanning to the right place. The redirect record carries a visible
+              note — "DO NOT DELETE — this record keeps previously printed QR codes working" — for anyone poking around
+              their PDS in tools like pdsls. Each code's latest record also keeps a list of every name it has ever had.
+              When you delete a code, all of those old redirect records are deleted too, in a single atomic write.
+            </p>
+          </Disclosure>
         </div>
       </section>
     </main>

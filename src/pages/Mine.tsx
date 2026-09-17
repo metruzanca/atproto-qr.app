@@ -3,13 +3,22 @@ import { A, useNavigate } from '@solidjs/router';
 import { QRCodeStyling } from '@liquid-js/qr-code-styling';
 
 import { agent, authReady, profile } from '../lib/atproto/auth';
-import { authedClient, deleteQRRecord, listQRRecords, type QRRecordItem } from '../lib/atproto/records';
+import {
+  authedClient,
+  cascadeDeleteQRRecord,
+  deleteRedirectRecord,
+  listQRRecords,
+  listRedirectRecords,
+  type QRRecordItem,
+  type RedirectItem,
+} from '../lib/atproto/records';
 import { styleToOptions } from '../lib/qr/style';
 import { contentTitle, contentToValue } from '../lib/qr/content';
 
 export default function Mine() {
   const navigate = useNavigate();
   const [items, setItems] = createSignal<QRRecordItem[]>([]);
+  const [redirects, setRedirects] = createSignal<RedirectItem[]>([]);
   const [error, setError] = createSignal('');
 
   const load = async () => {
@@ -17,18 +26,38 @@ export default function Mine() {
     if (!a) return;
     try {
       setItems(await listQRRecords(authedClient(a), a.sub));
+      setRedirects(await listRedirectRecords(authedClient(a), a.sub));
     } catch (err) {
       console.error(err);
       setError('Could not load your QR codes.');
     }
   };
 
-  const remove = async (rkey: string) => {
+  const removeRedirect = async (rkey: string) => {
     const a = agent();
     if (!a) return;
-    if (!confirm('Delete this QR code? This removes the record from your PDS.')) return;
+    if (
+      !confirm(
+        'Delete this redirect? This breaks the old URL it was printed under — any printed QR code using it will stop working.',
+      )
+    ) {
+      return;
+    }
     try {
-      await deleteQRRecord(authedClient(a), a.sub, rkey);
+      await deleteRedirectRecord(authedClient(a), a.sub, rkey);
+      setRedirects(redirects().filter((r) => r.rkey !== rkey));
+    } catch (err) {
+      console.error(err);
+      alert('Could not delete the redirect.');
+    }
+  };
+
+  const remove = async (rkey: string, aliases: string[] | undefined) => {
+    const a = agent();
+    if (!a) return;
+    if (!confirm('Delete this QR code? This removes the record and all of its redirect records from your PDS, breaking every printed URL for it.')) return;
+    try {
+      await cascadeDeleteQRRecord(authedClient(a), a.sub, rkey, aliases ?? []);
       setItems(items().filter((i) => i.rkey !== rkey));
     } catch (err) {
       console.error(err);
@@ -114,7 +143,7 @@ export default function Mine() {
                           </A>
                           <button
                             type="button"
-                            onClick={() => remove(item.rkey)}
+                            onClick={() => remove(item.rkey, item.record.aliases)}
                             class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
                           >
                             Delete
@@ -125,6 +154,61 @@ export default function Mine() {
                   }}
                 </For>
               </ul>
+
+              <Show when={redirects().length > 0}>
+                <section class="mt-10">
+                  <div class="mb-4">
+                    <h2 class="text-lg font-bold text-slate-900">Old names (redirects)</h2>
+                    <p class="text-sm text-slate-500">
+                      These keep previously printed QR codes working and are removed automatically when their code is
+                      deleted.
+                    </p>
+                  </div>
+                  <ul class="space-y-3">
+                    <For each={redirects()}>
+                      {(r) => {
+                        const url = `/${p().handle}/${r.rkey}`;
+                        return (
+                          <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-500">
+                              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" stroke-linecap="round" stroke-linejoin="round" />
+                              </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                              <p class="flex items-center gap-2 truncate text-sm font-semibold text-slate-900">
+                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                                  Redirect
+                                </span>
+                                {r.rkey} → {r.target}
+                              </p>
+                              <p class="truncate text-xs text-slate-500">
+                                {r.createdAt ? r.createdAt.slice(0, 10) : ''} · do not delete unless the old URL is no longer needed
+                              </p>
+                            </div>
+                            <div class="flex shrink-0 items-center gap-1">
+                              <A
+                                href={url}
+                                target="_blank"
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                              >
+                                View
+                              </A>
+                              <button
+                                type="button"
+                                onClick={() => removeRedirect(r.rkey)}
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      }}
+                    </For>
+                  </ul>
+                </section>
+              </Show>
             </>
           )}
         </Show>

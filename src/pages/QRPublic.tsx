@@ -1,17 +1,19 @@
 import { createEffect, createSignal, Show } from 'solid-js';
-import { useParams } from '@solidjs/router';
+import { useNavigate, useParams } from '@solidjs/router';
 import { isHandle, isRecordKey } from '@atcute/lexicons/syntax';
 
 import { profile } from '../lib/atproto/auth';
-import { getQRRecord } from '../lib/atproto/records';
+import { getQRRecord, getRedirectRecord } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
 import { contentTitle, contentToValue, isHttpUrl } from '../lib/qr/content';
 import { isValidRecord } from '../lib/qr/record';
+import { isValidSlug } from '../lib/qr/name';
 import type { QRStyle } from '../lib/qr/style';
 import { QRPreview } from '../components/QRPreview';
 
 export default function QRPublic() {
   const params = useParams<{ handle: string; id: string }>();
+  const navigate = useNavigate();
 
   const [status, setStatus] = createSignal<'loading' | 'found' | 'notfound' | 'error'>('loading');
   const [content, setContent] = createSignal<{ type: string; title: string; value: string } | null>(null);
@@ -33,6 +35,11 @@ export default function QRPublic() {
       setOwnerDid(actor.did);
       const item = await getQRRecord(actor.pds, actor.did, id);
       if (!item || !isValidRecord(item.record)) {
+        const redirect = await getRedirectRecord(actor.pds, actor.did, id);
+        if (redirect && isValidSlug(redirect.target)) {
+          navigate(`/${handle}/${redirect.target}`, { replace: true });
+          return;
+        }
         setStatus('notfound');
         return;
       }
