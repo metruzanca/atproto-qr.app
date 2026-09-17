@@ -7,7 +7,9 @@ import {
   authedClient,
   cascadeDeleteQRRecord,
   createQRRecord,
+  deleteRedirectRecord,
   getQRRecord,
+  getRedirectRecord,
   listAllNames,
   putQRRecord,
   putRedirectRecord,
@@ -15,8 +17,9 @@ import {
 } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
 import { isValidRecord, makeRecord, type Draft, type QRRecord } from '../lib/qr/record';
+import { emptyContent, contentTitle } from '../lib/qr/content';
+import { DEFAULT_STYLE } from '../lib/qr/style';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
-import { contentTitle } from '../lib/qr/content';
 import { Studio } from '../components/Studio';
 import { showToast } from '../components/Toast';
 
@@ -25,6 +28,8 @@ export default function Editor() {
   const navigate = useNavigate();
 
   const [status, setStatus] = createSignal<'loading' | 'loaded' | 'forbidden' | 'notfound'>('loading');
+  const [mode, setMode] = createSignal<'qr' | 'redirect'>('qr');
+  const [redirectTarget, setRedirectTarget] = createSignal<string | null>(null);
   const [draft, setDraft] = createSignal<Draft | null>(null);
   const [existing, setExisting] = createSignal<QRRecord | null>(null);
   const [name, setName] = createSignal('');
@@ -59,13 +64,24 @@ export default function Editor() {
         return;
       }
       const item = await getQRRecord(actor.pds, p.did, id);
-      if (!item || !isValidRecord(item.record)) {
-        setStatus('notfound');
-        return;
+      if (item && isValidRecord(item.record)) {
+        setMode('qr');
+        setRedirectTarget(null);
+        setExisting(item.record);
+        setDraft({ content: item.record.content, style: item.record.style });
+        setName(id);
+      } else {
+        const redirect = await getRedirectRecord(actor.pds, p.did, id);
+        if (!redirect) {
+          setStatus('notfound');
+          return;
+        }
+        setMode('redirect');
+        setRedirectTarget(redirect.target);
+        setExisting(null);
+        setDraft({ content: emptyContent('url'), style: { ...DEFAULT_STYLE } });
+        setName(id);
       }
-      setExisting(item.record);
-      setDraft({ content: item.record.content, style: item.record.style });
-      setName(id);
       setNameError('');
       const names = await listAllNames(authedClient(a), p.did);
       setExistingNames(new Set(names));
@@ -108,20 +124,44 @@ export default function Editor() {
     setSaving(true);
     setError('');
     try {
+      const client = authedClient(a);
+      if (mode() === 'redirect') {
+        if (v === params.id) {
+          await createQRRecord(client, p.did, params.id, makeRecord(d, undefined));
+          await deleteRedirectRecord(client, p.did, params.id);
+          showToast('Saved as a QR code');
+          navigate(`${publicPath()}/edit`, { replace: true });
+        } else {
+          const record = makeRecord(d, undefined);
+          record.aliases = [params.id];
+          await createQRRecord(client, p.did, v, record);
+          await putRedirectRecord(client, p.did, params.id, v);
+          await cascadeDeleteQRRecord(client, p.did, params.id, []).catch((cleanupErr) => {
+            console.warn('failed to remove stale QR record:', cleanupErr);
+          });
+          showToast(`Renamed to ${v}`);
+          navigate(`/${p.handle}/${v}/edit`, { replace: true });
+        }
+        return;
+      }
+
       if (v === params.id) {
         const record = makeRecord(d, existing() ?? undefined);
-        await putQRRecord(authedClient(a), p.did, params.id, record);
+        await putQRRecord(client, p.did, params.id, record);
         showToast('Changes saved');
       } else {
         const record = makeRecord(d, existing() ?? undefined);
         record.aliases = [...(existing()?.aliases ?? []), params.id];
-        await createQRRecord(authedClient(a), p.did, v, record);
+        await createQRRecord(client, p.did, v, record);
         try {
-          await putRedirectRecord(authedClient(a), p.did, params.id, v);
+          await putRedirectRecord(client, p.did, params.id, v);
         } catch (renameErr) {
-          await cascadeDeleteQRRecord(authedClient(a), p.did, v, []).catch(() => {});
+          await cascadeDeleteQRRecord(client, p.did, v, []).catch(() => {});
           throw renameErr;
         }
+        await cascadeDeleteQRRecord(client, p.did, params.id, []).catch((cleanupErr) => {
+          console.warn('failed to remove old QR record:', cleanupErr);
+        });
         setExistingNames((prev) => new Set(prev).add(v));
         showToast(`Renamed to ${v}`);
         navigate(`/${p.handle}/${v}/edit`, { replace: true });
@@ -142,6 +182,17 @@ export default function Editor() {
     const a = agent();
     const p = profile();
     if (!a || !p) return;
+    if (mode() === 'redirect') {
+      if (!confirm('Delete this redirect? This breaks the old URL it was printed under.')) return;
+      try {
+        await deleteRedirectRecord(authedClient(a), p.did, params.id);
+        navigate('/codes');
+      } catch (err) {
+        console.error(err);
+        alert('Could not delete the redirect.');
+      }
+      return;
+    }
     if (!confirm('Delete this QR code? This removes the record and all of its redirect records from your PDS, breaking every printed URL for it.')) return;
     try {
       await cascadeDeleteQRRecord(authedClient(a), p.did, params.id, existing()?.aliases ?? []);
@@ -185,7 +236,14 @@ export default function Editor() {
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Editing · {contentTitle(d().content)}
                 </p>
-                <h1 class="truncate text-2xl font-bold text-slate-900">{params.handle}/{params.id}</h1>
+                <h1 class="flex items-center gap-2 truncate text-2xl font-bold text-slate-900">
+                  {params.handle}/{params.id}
+                  <Show when={mode() === 'redirect'}>
+                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                      Redirect
+                    </span>
+                  </Show>
+                </h1>
               </div>
               <button
                 type="button"
@@ -198,6 +256,14 @@ export default function Editor() {
 
             <Show when={error()}>
               <p class="mb-4 text-sm text-red-600">{error()}</p>
+            </Show>
+
+            <Show when={mode() === 'redirect' && redirectTarget()}>
+              <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                This name is currently a <span class="font-semibold">redirect</span> to{' '}
+                <span class="font-mono">{redirectTarget()}</span> — it keeps an older printed URL working. Fill in the
+                details below and save to turn it back into a real QR code.
+              </div>
             </Show>
 
             <Studio

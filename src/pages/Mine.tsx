@@ -14,12 +14,36 @@ import {
 } from '../lib/atproto/records';
 import { styleToOptions } from '../lib/qr/style';
 import { contentToValue } from '../lib/qr/content';
+import type { QRRecord } from '../lib/qr/record';
+
+type Entry =
+  | { kind: 'qr'; rkey: string; record: QRRecord; stamp: string }
+  | { kind: 'redirect'; rkey: string; target: string; stamp: string };
 
 export default function Mine() {
   const navigate = useNavigate();
   const [items, setItems] = createSignal<QRRecordItem[]>([]);
   const [redirects, setRedirects] = createSignal<RedirectItem[]>([]);
   const [error, setError] = createSignal('');
+
+  const entries = () => {
+    const redirectKeys = new Set(redirects().map((r) => r.rkey));
+    const qrs: Entry[] = items()
+      .filter((i) => !redirectKeys.has(i.rkey))
+      .map((i) => ({
+        kind: 'qr',
+        rkey: i.rkey,
+        record: i.record,
+        stamp: i.record.updatedAt,
+      }));
+    const rds: Entry[] = redirects().map((r) => ({
+      kind: 'redirect',
+      rkey: r.rkey,
+      target: r.target,
+      stamp: r.createdAt,
+    }));
+    return [...qrs, ...rds].sort((a, b) => b.stamp.localeCompare(a.stamp));
+  };
 
   const load = async () => {
     const a = agent();
@@ -94,7 +118,7 @@ export default function Mine() {
                 <div>
                   <h1 class="text-2xl font-bold text-slate-900">My QR codes</h1>
                   <p class="text-sm text-slate-500">
-                    {items().length} saved as <span class="font-mono">{p().handle}</span>
+                    {entries().length} saved as <span class="font-mono">{p().handle}</span>
                   </p>
                 </div>
                 <button
@@ -110,7 +134,7 @@ export default function Mine() {
                 <p class="mb-4 text-sm text-red-600">{error()}</p>
               </Show>
 
-              <Show when={items().length === 0 && !error()}>
+              <Show when={entries().length === 0 && !error()}>
                 <div class="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
                   <p class="text-slate-600">No QR codes yet.</p>
                   <a href="/" class="mt-2 inline-block text-sm font-semibold text-sky-600">
@@ -120,100 +144,98 @@ export default function Mine() {
               </Show>
 
               <ul class="space-y-3">
-                <For each={items()}>
-                  {(item) => {
-                    const url = `/${p().handle}/${item.rkey}`;
-                    return (
-                      <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                        <div class="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50">
-                          <RecordThumb record={item.record} />
-                        </div>
-                        <div class="min-w-0 flex-1">
-                          <p class="truncate text-sm font-semibold text-slate-900">{item.rkey}</p>
-                          <p class="truncate text-xs text-slate-500">
-                            {item.record.content.type} · {contentToValue(item.record.content) || '—'} · {item.record.updatedAt.slice(0, 10)}
-                          </p>
-                        </div>
-                        <div class="flex shrink-0 items-center gap-1">
-                          <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
-                            View
-                          </A>
-                          <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
-                            Edit
-                          </A>
-                          <button
-                            type="button"
-                            onClick={() => remove(item.rkey, item.record.aliases)}
-                            class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </li>
-                    );
-                  }}
+                <For each={entries()}>
+                  {(entry) =>
+                    entry.kind === 'qr'
+                      ? renderQR(p(), entry, remove)
+                      : renderRedirect(p(), entry, removeRedirect)
+                  }
                 </For>
               </ul>
-
-              <Show when={redirects().length > 0}>
-                <section class="mt-10">
-                  <div class="mb-4">
-                    <h2 class="text-lg font-bold text-slate-900">Old names (redirects)</h2>
-                    <p class="text-sm text-slate-500">
-                      These keep previously printed QR codes working and are removed automatically when their code is
-                      deleted.
-                    </p>
-                  </div>
-                  <ul class="space-y-3">
-                    <For each={redirects()}>
-                      {(r) => {
-                        const url = `/${p().handle}/${r.rkey}`;
-                        return (
-                          <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-500">
-                              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" stroke-linecap="round" stroke-linejoin="round" />
-                              </svg>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                              <p class="flex items-center gap-2 truncate text-sm font-semibold text-slate-900">
-                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                                  Redirect
-                                </span>
-                                {r.rkey} → {r.target}
-                              </p>
-                              <p class="truncate text-xs text-slate-500">
-                                {r.createdAt ? r.createdAt.slice(0, 10) : ''} · do not delete unless the old URL is no longer needed
-                              </p>
-                            </div>
-                            <div class="flex shrink-0 items-center gap-1">
-                              <A
-                                href={url}
-                                target="_blank"
-                                class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
-                              >
-                                View
-                              </A>
-                              <button
-                                type="button"
-                                onClick={() => removeRedirect(r.rkey)}
-                                class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </li>
-                        );
-                      }}
-                    </For>
-                  </ul>
-                </section>
-              </Show>
             </>
           )}
         </Show>
       </Show>
     </main>
+  );
+}
+
+function renderQR(
+  p: { handle: string },
+  entry: Entry & { kind: 'qr' },
+  onDelete: (rkey: string, aliases: string[] | undefined) => Promise<void>,
+) {
+  const url = `/${p.handle}/${entry.rkey}`;
+  return (
+    <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      <div class="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50">
+        <RecordThumb record={entry.record} />
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold text-slate-900">{entry.rkey}</p>
+        <p class="truncate text-xs text-slate-500">
+          {entry.record.content.type} · {contentToValue(entry.record.content) || '—'} · {entry.record.updatedAt.slice(0, 10)}
+        </p>
+      </div>
+      <div class="flex shrink-0 items-center gap-1">
+        <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+          View
+        </A>
+        <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
+          Edit
+        </A>
+        <button
+          type="button"
+          onClick={() => onDelete(entry.rkey, entry.record.aliases)}
+          class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+        >
+          Delete
+        </button>
+      </div>
+    </li>
+  );
+}
+
+function renderRedirect(
+  p: { handle: string },
+  entry: Entry & { kind: 'redirect' },
+  onDelete: (rkey: string) => Promise<void>,
+) {
+  const url = `/${p.handle}/${entry.rkey}`;
+  return (
+    <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-500">
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="flex items-center gap-2 truncate text-sm font-semibold text-slate-900">
+          <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+            Redirect
+          </span>
+          {entry.rkey} → {entry.target}
+        </p>
+        <p class="truncate text-xs text-slate-500">
+          {entry.stamp ? entry.stamp.slice(0, 10) : ''} · keeps old printed URLs working
+        </p>
+      </div>
+      <div class="flex shrink-0 items-center gap-1">
+        <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+          View
+        </A>
+        <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
+          Edit
+        </A>
+        <button
+          type="button"
+          onClick={() => onDelete(entry.rkey)}
+          class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+        >
+          Delete
+        </button>
+      </div>
+    </li>
   );
 }
 
