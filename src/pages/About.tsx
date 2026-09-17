@@ -49,19 +49,13 @@ export default function About() {
           QR image, downloading it — it's all done by your own computer, in real time, with no one else in the loop.
         </p>
         <div class="mt-4 space-y-3">
-          <Disclosure summary={'What does "runs in your browser" actually mean?'}>
-            <p>
-              This site is a static web app: just files served over the internet. The moment they load, your browser
-              executes them on your device. Anything you type or design never leaves your machine unless{' '}
-              <em>you</em> choose to send it somewhere. That's also why there's nothing for a company to log, mine, or
-              sell — the code simply doesn't contact any server of ours, because no such server exists.
-            </p>
-          </Disclosure>
           <Disclosure summary="Is the QR code really generated locally?">
             <p>
-              Yes. The QR code is drawn directly in your browser from the data you enter. Nothing is uploaded, encoded
-              by a remote service, or stored along the way. The finished image is produced on your device and only
-              leaves it if you download or share it yourself.
+              Yes. The QR code is drawn directly in your browser from the data you enter. This site is just static
+              files that run on your device, so nothing you type or design is uploaded, encoded by a remote service, or
+              stored along the way. The finished image is produced on your computer and only leaves it if you download
+              or share it yourself. That's also why there's nothing here to log, mine, or sell — no server of ours
+              exists.
             </p>
           </Disclosure>
           <Disclosure summary={'Then why is there a "sign in" button?'}>
@@ -153,26 +147,24 @@ export default function About() {
       <section class="mt-12">
         <h2 class="text-xl font-bold text-slate-900">Frequently asked questions</h2>
         <div class="mt-4 space-y-3">
-          <Disclosure summary="Why does this app ask me to log in with Bluesky?">
-            <p>
-              So your editable codes can live on <em>your</em> data server instead of on another website's database.
-              The login uses atproto's standard OAuth flow: you're redirected to your own provider, you approve access,
-              and this app never sees your password. If you'd rather not sign in, you can still design and download QR
-              codes — they just won't be saved anywhere.
-            </p>
-          </Disclosure>
-          <Disclosure summary="Can you see my QR codes?">
-            <p>
-              No. There's no backend or database, so there's nothing for us to read. Your codes are stored on your own
-              PDS, and your browser writes and reads them directly. This site is a static page — it has no idea who
-              you are or what you've made.
-            </p>
-          </Disclosure>
           <Disclosure summary="What happens to my codes if this website goes down?">
             <p>
-              Nothing. Your codes live on your PDS, not here. This site is just static files — the same files anyone
-              can re-host — so even if it disappeared, your codes, their links, and the ability to view them would
-              remain yours. That's the whole point of not running a server.
+              Your records would be safe, but the friendly links would not. The data itself lives on your PDS, not
+              here — it's never lost, and because atproto is portable it can be read back with any client or a re-hosted
+              copy of this app. However, a link like{' '}
+              <span class="font-mono">{import.meta.env.VITE_PUBLIC_ORIGIN}/you/name</span> only works while someone is serving this app at
+              that address. If this site disappeared, those exact URLs would stop resolving even though your codes
+              remain intact and fully portable.
+            </p>
+          </Disclosure>
+          <Disclosure summary="Can I host my own copy?">
+            <p>
+              Yes — and you're encouraged to if it gives you peace of mind. I don't plan to shut this down any time
+              soon, but the whole app is static files you can deploy anywhere for free (Vercel, Netlify, Cloudflare
+              Pages, and so on). No custom domain is needed, and you can sign in with your own Bluesky handle — e.g.{' '}
+              <span class="font-mono">@cmgriffing.bsky.social</span>. The app derives its OAuth client ID and redirect
+              URL from a single environment variable (<span class="font-mono">VITE_PUBLIC_ORIGIN</span>), so a
+              self-hosted copy works on its own URL out of the box.
             </p>
           </Disclosure>
           <Disclosure summary="What is a PDS?">

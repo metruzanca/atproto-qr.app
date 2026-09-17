@@ -24,13 +24,12 @@ import type {} from '@atcute/bluesky';
 export const SCOPE = 'atproto transition:generic';
 
 const DEV_REDIRECT_URI = 'http://127.0.0.1:3000/oauth/callback';
-const PROD_CLIENT_ID = 'https://atproto-qr.app/oauth-client-metadata.json';
-const PROD_REDIRECT_URI = 'https://atproto-qr.app/oauth/callback';
+const PUBLIC_ORIGIN = (import.meta.env.VITE_PUBLIC_ORIGIN ?? '').replace(/\/$/, '');
 
 export const CLIENT_ID = import.meta.env.DEV
   ? `http://localhost?redirect_uri=${encodeURIComponent(DEV_REDIRECT_URI)}&scope=${encodeURIComponent(SCOPE)}`
-  : PROD_CLIENT_ID;
-export const REDIRECT_URI = import.meta.env.DEV ? DEV_REDIRECT_URI : PROD_REDIRECT_URI;
+  : `${PUBLIC_ORIGIN}/oauth-client-metadata.json`;
+export const REDIRECT_URI = import.meta.env.DEV ? DEV_REDIRECT_URI : `${PUBLIC_ORIGIN}/oauth/callback`;
 
 export const identityResolver = new LocalActorResolver({
   handleResolver: new XrpcHandleResolver({ serviceUrl: 'https://public.api.bsky.app' }),
