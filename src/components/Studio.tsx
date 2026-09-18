@@ -4,6 +4,7 @@ import { browserUtils, type QRCodeStyling } from '@liquid-js/qr-code-styling';
 
 import type { Draft, QRKind } from '../lib/qr/record';
 import { contentToValue } from '../lib/qr/content';
+import { isDefaultStyle } from '../lib/qr/style';
 import type { UploadedFile } from '../lib/atproto/records';
 import { QRPreview } from './QRPreview';
 import { ContentFields } from './ContentFields';
@@ -37,6 +38,7 @@ export function Studio(props: Props) {
   const [downloading, setDownloading] = createSignal(false);
   const [copied, setCopied] = createSignal(false);
   const [showUnlockModal, setShowUnlockModal] = createSignal(false);
+  const [styleOpen, setStyleOpen] = createSignal(!isDefaultStyle(props.draft.style));
 
   const data = () => props.qrData ?? contentToValue(props.draft.content);
 
@@ -164,8 +166,37 @@ export function Studio(props: Props) {
         </section>
 
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Style</h2>
-          <StyleControls style={props.draft.style} onChange={(style) => props.onChange({ ...props.draft, style })} />
+          <button
+            type="button"
+            onClick={() => setStyleOpen(!styleOpen())}
+            aria-expanded={styleOpen()}
+            aria-controls="style-controls"
+            class="mb-4 flex w-full items-center justify-between text-left"
+          >
+            <span>
+              <span class="block text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Style
+              </span>
+              <span class="mt-0.5 block text-xs text-slate-400 dark:text-slate-500">Colors, shapes, logo</span>
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class={`h-5 w-5 text-slate-400 transition-transform ${styleOpen() ? 'rotate-180' : ''}`}
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          <Show when={styleOpen()}>
+            <div id="style-controls">
+              <StyleControls style={props.draft.style} onChange={(style) => props.onChange({ ...props.draft, style })} />
+            </div>
+          </Show>
         </section>
       </div>
 

@@ -36,6 +36,10 @@ export const DEFAULT_STYLE: QRStyle = {
 
 export const ERROR_CORRECTION_LEVELS: ('L' | 'M' | 'Q' | 'H')[] = ['L', 'M', 'Q', 'H'];
 
+export function isDefaultStyle(style: QRStyle): boolean {
+  return (Object.keys(DEFAULT_STYLE) as (keyof QRStyle)[]).every((key) => style[key] === DEFAULT_STYLE[key]);
+}
+
 const PROXY_FALLBACK_ORIGIN = 'https://images.weserv.nl';
 
 function proxyOrigin(): string {
