@@ -74,6 +74,16 @@ export async function fetchProfile(did: Did): Promise<SessionProfile> {
   };
 }
 
+export async function searchActors(q: string, limit = 8): Promise<{ handle: string; displayName: string | null; avatar: string | null }[]> {
+  const res = await appview.get('app.bsky.actor.searchActorsTypeahead', { params: { q, limit } });
+  if (!res.ok) return [];
+  return res.data.actors.map((a) => ({
+    handle: a.handle,
+    displayName: a.displayName ?? null,
+    avatar: a.avatar ?? null,
+  }));
+}
+
 export async function initAuth(): Promise<void> {
   try {
     const dids = listStoredSessions();
