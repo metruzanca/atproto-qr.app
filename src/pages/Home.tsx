@@ -7,6 +7,7 @@ import { codeUrl, contentToValue, emptyContent } from '../lib/qr/content';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { DEFAULT_STYLE } from '../lib/qr/style';
 import { draftFromParams, draftToParams, makeRecord, type Draft, type QRKind } from '../lib/qr/record';
+import { globalAnalytics, type QRCodeTracking } from '../lib/qr/tracking';
 import { Studio } from '../components/Studio';
 import { UsageGuide } from '../components/UsageGuide';
 
@@ -25,6 +26,7 @@ export default function Home() {
   const [existingKeys, setExistingKeys] = createSignal<Set<string>>(new Set());
   const [saving, setSaving] = createSignal(false);
   const [saveError, setSaveError] = createSignal('');
+  const [tracking, setTracking] = createSignal<QRCodeTracking | undefined>(undefined);
 
   createEffect(() => {
     const a = agent();
@@ -105,6 +107,7 @@ export default function Home() {
       record.kind = kind();
       if (kind() === 'dynamic') {
         record.qrValue = qrData();
+        record.tracking = tracking();
       }
       await createQRRecord(authedClient(a), p.did, v, record);
       setExistingKeys((prev) => new Set(prev).add(v));
@@ -159,6 +162,9 @@ export default function Home() {
         onNameChange={onNameChange}
         onGenerateName={generateName}
         nameError={nameError()}
+        tracking={tracking()}
+        onTrackingChange={setTracking}
+        globalAnalytics={globalAnalytics()}
       />
 
       <UsageGuide />

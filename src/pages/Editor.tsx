@@ -21,6 +21,7 @@ import { isValidRecord, makeRecord, type Draft, type QRKind, type QRRecord } fro
 import { codeUrl, contentTitle, contentToValue, emptyContent } from '../lib/qr/content';
 import { DEFAULT_STYLE } from '../lib/qr/style';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
+import { globalAnalytics, type QRCodeTracking } from '../lib/qr/tracking';
 import { Studio } from '../components/Studio';
 import { showToast } from '../components/Toast';
 
@@ -40,6 +41,7 @@ export default function Editor() {
   const [error, setError] = createSignal('');
   const [saving, setSaving] = createSignal(false);
   const [unlocked, setUnlocked] = createSignal(false);
+  const [tracking, setTracking] = createSignal<QRCodeTracking | undefined>(undefined);
 
   const publicPath = () => `/${params.handle}/${params.id}`;
   const publicUrl = () => `${location.origin}${publicPath()}`;
@@ -89,6 +91,7 @@ export default function Editor() {
         setExisting(item.record);
         setKind(item.record.kind ?? 'fixed');
         setDraft({ content: item.record.content, style: item.record.style });
+        setTracking(item.record.tracking);
         setName(id);
       } else {
         const redirect = await getRedirectRecord(actor.pds, p.did, id);
@@ -101,6 +104,7 @@ export default function Editor() {
         setExisting(null);
         setKind('fixed');
         setDraft({ content: emptyContent('url'), style: { ...DEFAULT_STYLE } });
+        setTracking(undefined);
         setName(id);
       }
       setUnlocked(false);
@@ -157,6 +161,7 @@ export default function Editor() {
         record.kind = kind();
         if (kind() === 'dynamic') {
           record.qrValue = codeUrl(p.handle, v);
+          record.tracking = tracking();
         }
         return record;
       };
@@ -326,6 +331,9 @@ export default function Editor() {
               onNameChange={onNameChange}
               onGenerateName={generateName}
               nameError={nameError()}
+              tracking={tracking()}
+              onTrackingChange={setTracking}
+              globalAnalytics={globalAnalytics()}
             />
           </>
         )}

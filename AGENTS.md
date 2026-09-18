@@ -29,16 +29,20 @@ pnpm exec tsc --noEmit   # typecheck (there is no lint script)
 - `/login`, `/oauth/callback` — OAuth flow.
 - `/codes` — list the user's saved QR records (was `/mine`).
 - `/:handle/:id` — public page: URL-type instantly redirects to the data target; other types render the styled QR (dynamic codes render their stored `qrValue`, i.e. the app URL). Follows redirect records.
-- `/:handle/:id/edit` — owner-gated editor; both kinds editable (Fixed records lock the data form behind a padlock + confirm, since changing data produces a new image; style is always editable; kind is locked except when converting a redirect, where the Code type selector reappears). Save updates or renames; Delete cascade-deletes.
+- `/:handle/:id/edit` — owner-gated editor; both kinds editable (Fixed records lock the data form behind a padlock + confirm, since changing data produces a new image; style is always editable; kind is locked except when converting a redirect, where the Code type selector reappears). Save updates or renames; Delete cascade-deletes. When the code is dynamic, an Analytics section offers No/Global/Custom tracking radios.
+- `/settings` — signed-in only: global analytics config (stored in the user's settings record) + an "Apply to existing codes" checkbox list that opts dynamic codes into `tracking: { source: 'global' }`. Header link shown when signed in.
 - `/about` — privacy/technical explainer.
 
 ## Data model (records in the user's PDS)
 
-- `app.atproto-qr.qr` — a saved code. Shape: `{ $type, kind, content: { type, fields }, style, qrValue?, createdAt, updatedAt, aliases?: string[] }`.
+- `app.atproto-qr.qr` — a saved code. Shape: `{ $type, kind, content: { type, fields }, style, qrValue?, createdAt, updatedAt, aliases?: string[], tracking? }`.
   - `kind` = `'fixed'` | `'dynamic'`. **Dynamic**: the QR encodes the app URL `{origin}/{handle}/{name}`, snapshotted into `qrValue` at save/rename so the image never changes; content stays editable. **Fixed**: the QR encodes the real data via `contentToValue`; the record is a stored copy, and the data form is locked in the editor behind a confirm (changing it re-encodes → new image). Legacy records with no `kind` are treated as fixed.
   - `qrValue` = the exact string the QR encodes, stored for dynamic codes (snapshot of the app URL; stable across origin/handle changes). For fixed codes it's absent — derive from `content` via `qrValueFor`.
   - `aliases` = every previous name this code has had (oldest first); used for cascade delete.
+  - `tracking` = `{ source: 'global' }` | `{ source: 'custom', config }` — **dynamic codes only** (never set for fixed; the public page only fires for dynamic). `global` is a *reference*: resolved from the owner's settings record at render time, so global edits apply retroactively. `custom` carries a `TrackingConfig`. Absent = no tracking. `isValidRecord` tolerates any object here (lenient, never rejects the record).
 - `app.atproto-qr.redirect` — created at an old name when a code is renamed. Shape: `{ $type, target, note, createdAt }`. `note` is a visible "DO NOT DELETE — keeps printed QR codes working" warning (shown to users browsing their PDS).
+- `app.atproto-qr.settings` (rkey `preferences`) — `{ $type, theme, analytics?, updatedAt }`. `analytics` = the global `TrackingConfig`. **Both `src/lib/theme.ts` and `src/lib/qr/tracking.ts` read/write this same record; writes must merge (read-modify-write) or they clobber each other** (theme.ts re-reads before writing to preserve `analytics`).
+- `TrackingConfig` (`src/lib/qr/tracking.ts`): `{ provider: 'ga4'; measurementId; apiSecret? }` | `{ provider: 'plausible'; domain; endpoint? }` | `{ provider: 'umami'; websiteId; endpoint }` | `{ provider: 'matomo'; endpoint; siteId }`. GA4 with `apiSecret` uses the Measurement Protocol beacon (no script); without, it injects gtag.js. All beacons fire client-side from the public page; **no arbitrary third-party JS ever runs on the app origin** (it would be able to read OAuth sessions from localStorage).
 - rkey = the code's user-chosen name. Generated names are `{adjective}-{animal}` (`src/lib/qr/name.ts`). Slugs: lowercase letters/digits/hyphens, ≤63 chars.
 
 Rename flow (`src/pages/Editor.tsx`): validate name unique → `com.atproto.repo.createRecord` at new name with `aliases = [...old.aliases, oldRkey]` → `putRecord` a redirect at the old rkey → delete the old QR record → navigate to new edit page. Old URLs resolve via redirect records (public page follows hops client-side). Delete cascades the QR record + every alias redirect.
@@ -52,6 +56,9 @@ Rename flow (`src/pages/Editor.tsx`): validate name unique → `com.atproto.repo
 - `src/lib/qr/style.ts` — serializable `QRStyle` ↔ qr-code-styling options (`styleToOptions`).
 - `src/components/Studio.tsx` — shared generator (kind selector, content + style + preview + download + optional name/save block; `qrData` prop drives the encoded payload, name/save shown for both kinds; `contentLocked` overlays the data form with a padlock that unlocks via `ConfirmDialog`).
 - `src/lib/qr/name.ts` — slug validation, adjective/animal word lists, `generateCodeName`.
+- `src/lib/qr/tracking.ts` — `TrackingConfig`/`QRCodeTracking` types + validation, `parseGtagId`, `fireTracking` (GA4 gtag/MP, Plausible, Umami, Matomo beacons, fire-once guard), and the `globalAnalytics` signal + `saveGlobalAnalytics` (settings-record read-modify-write).
+- `src/components/TrackingConfigFields.tsx` — shared provider form (used by Studio custom tracking and `/settings`).
+- `src/pages/Settings.tsx` — global analytics config + "Apply to existing codes" opt-in list (writes `tracking: { source: 'global' }` to selected dynamic records).
 
 ## Critical gotchas
 

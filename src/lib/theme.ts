@@ -83,13 +83,15 @@ createRoot(() => {
     if (loadedDid !== p.did || !loadedOk) return;
     if (pushedValue === t) return;
     pushedValue = t;
-    const record: SettingsRecord = {
-      $type: SETTINGS_COLLECTION,
-      theme: t,
-      updatedAt: new Date().toISOString(),
-    };
     void (async () => {
       try {
+        const current = await getSettingsRecord(a.session.info.aud, p.did);
+        const record: SettingsRecord = {
+          $type: SETTINGS_COLLECTION,
+          theme: t,
+          analytics: current?.analytics,
+          updatedAt: new Date().toISOString(),
+        };
         await putSettingsRecord(authedClient(a), p.did, record);
       } catch (err) {
         console.warn('failed to save theme setting:', err);

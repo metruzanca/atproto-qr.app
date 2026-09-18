@@ -3,12 +3,13 @@ import { useNavigate, useParams } from '@solidjs/router';
 import { isHandle, isRecordKey } from '@atcute/lexicons/syntax';
 
 import { profile } from '../lib/atproto/auth';
-import { getQRRecord, getRedirectRecord } from '../lib/atproto/records';
+import { getGlobalAnalytics, getQRRecord, getRedirectRecord } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
 import { codeUrl, contentTitle, contentToValue, isHttpUrl, type BlobRef } from '../lib/qr/content';
 import { isValidRecord, qrValueFor, type QRKind } from '../lib/qr/record';
 import { isValidSlug } from '../lib/qr/name';
 import type { QRStyle } from '../lib/qr/style';
+import { fireTracking, type TrackingConfig } from '../lib/qr/tracking';
 import { QRPreview } from '../components/QRPreview';
 
 export default function QRPublic() {
@@ -69,6 +70,20 @@ export default function QRPublic() {
         return;
       }
       const ctx = { pdsUrl: actor.pds, did: actor.did };
+
+      const trk = (item.record.kind ?? 'fixed') === 'dynamic' ? item.record.tracking : undefined;
+      if (trk && !isOwner()) {
+        let cfg: TrackingConfig | undefined;
+        if (trk.source === 'custom') {
+          cfg = trk.config;
+        } else if (trk.source === 'global') {
+          cfg = await getGlobalAnalytics(actor.pds, actor.did);
+        }
+        if (cfg) {
+          await fireTracking(cfg, { url: location.href, title: document.title, referrer: document.referrer });
+        }
+      }
+
       const value = qrValueFor(item.record, codeUrl(params.handle, params.id), ctx);
       const dataValue = contentToValue(item.record.content, ctx);
       setStyle(item.record.style);

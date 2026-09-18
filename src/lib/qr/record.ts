@@ -1,5 +1,6 @@
 import { contentToValue, CONTENT_TYPES, defaultFields, type Content, type ContentContext, type ContentType } from './content';
 import { DEFAULT_STYLE, type QRStyle } from './style';
+import type { QRCodeTracking } from './tracking';
 
 export const COLLECTION = 'app.atproto-qr.qr';
 
@@ -14,6 +15,7 @@ export interface QRRecord {
   createdAt: string;
   updatedAt: string;
   aliases?: string[];
+  tracking?: QRCodeTracking;
 }
 
 export interface Draft {
@@ -32,6 +34,7 @@ export function makeRecord(draft: Draft, existing?: QRRecord): QRRecord {
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
     aliases: existing?.aliases ?? [],
+    tracking: existing?.tracking,
   };
 }
 
@@ -52,7 +55,8 @@ export function isValidRecord(value: unknown): value is QRRecord {
     v.content !== null &&
     typeof (v.content as { type?: unknown }).type === 'string' &&
     typeof v.style === 'object' &&
-    v.style !== null
+    v.style !== null &&
+    (v.tracking === undefined || typeof v.tracking === 'object')
   );
 }
 

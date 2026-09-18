@@ -11,6 +11,7 @@ import Mine from './pages/Mine';
 import QRPublic from './pages/QRPublic';
 import Editor from './pages/Editor';
 import About from './pages/About';
+import Settings from './pages/Settings';
 
 function Root(props: { children?: JSX.Element }) {
   return (
@@ -75,6 +76,7 @@ const App = () => {
       <Route path="/oauth/callback" component={Callback} />
       <Route path="/codes" component={Mine} />
       <Route path="/about" component={About} />
+      <Route path="/settings" component={Settings} />
       <Route path="/:handle/:id" component={QRPublic} />
       <Route path="/:handle/:id/edit" component={Editor} />
     </Router>

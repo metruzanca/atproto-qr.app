@@ -4,6 +4,7 @@ import type { ActorIdentifier } from '@atcute/lexicons';
 
 import type { BlobRef } from '../qr/content';
 import type { QRRecord } from '../qr/record';
+import { isValidTrackingConfig, type TrackingConfig } from '../qr/tracking';
 
 export const COLLECTION = 'app.atproto-qr.qr';
 export const REDIRECT_COLLECTION = 'app.atproto-qr.redirect';
@@ -168,6 +169,7 @@ export type ThemeSetting = 'light' | 'dark' | 'system';
 export interface SettingsRecord {
   $type: typeof SETTINGS_COLLECTION;
   theme: ThemeSetting;
+  analytics?: TrackingConfig;
   updatedAt: string;
 }
 
@@ -184,6 +186,18 @@ export async function getSettingsRecord(pdsUrl: string, repo: string): Promise<S
     return value;
   }
   return null;
+}
+
+export async function getGlobalAnalytics(pdsUrl: string, repo: string): Promise<TrackingConfig | undefined> {
+  const client = publicClient(pdsUrl);
+  const res = await client.get('com.atproto.repo.getRecord', {
+    params: { repo: repo as ActorIdentifier, collection: SETTINGS_COLLECTION, rkey: SETTINGS_RKEY },
+  });
+  if (!res.ok) {
+    return undefined;
+  }
+  const value = res.data.value as unknown as { analytics?: unknown };
+  return value && isValidTrackingConfig(value.analytics) ? value.analytics : undefined;
 }
 
 export async function putSettingsRecord(client: Client, repo: string, record: SettingsRecord): Promise<void> {
