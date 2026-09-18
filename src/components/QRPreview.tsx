@@ -43,7 +43,7 @@ export function QRPreview(props: Props): JSX.Element {
   return (
     <div ref={container} class={props.class}>
       <Show when={!props.data}>
-        <div class="flex h-full min-h-64 items-center justify-center text-sm text-slate-400">
+        <div class="flex h-full min-h-64 items-center justify-center text-sm text-slate-400 dark:text-slate-500">
           {props.emptyHint ?? 'Fill in some content to see your QR code.'}
         </div>
       </Show>

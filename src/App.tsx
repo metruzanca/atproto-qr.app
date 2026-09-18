@@ -14,12 +14,12 @@ import About from './pages/About';
 
 function Root(props: { children?: JSX.Element }) {
   return (
-    <div class="flex min-h-screen flex-col bg-slate-50 text-slate-900">
+    <div class="flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <Header />
       <div class="flex-1">{props.children}</div>
       <ToastContainer />
-      <footer class="border-t border-slate-200 bg-white">
-        <div class="mx-auto max-w-6xl space-y-2 px-4 py-6 text-center text-xs text-slate-500">
+      <footer class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div class="mx-auto max-w-6xl space-y-2 px-4 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
           <p>
             Your QR codes are stored on your own Bluesky account — we can't edit, hide, or delete them.
           </p>

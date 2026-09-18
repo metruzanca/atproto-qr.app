@@ -5,12 +5,12 @@ import { agent, profile } from '../lib/atproto/auth';
 
 function Disclosure(props: { summary: string; children: JSX.Element }) {
   return (
-    <details class="group rounded-xl border border-slate-200 bg-white shadow-sm">
-      <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+    <details class="group rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+      <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800">
         {props.summary}
         <svg
           viewBox="0 0 20 20"
-          class="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180"
+          class="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180 dark:text-slate-500"
           fill="currentColor"
           aria-hidden="true"
         >
@@ -21,7 +21,7 @@ function Disclosure(props: { summary: string; children: JSX.Element }) {
           />
         </svg>
       </summary>
-      <div class="border-t border-slate-100 px-4 py-4 text-sm leading-relaxed text-slate-600">{props.children}</div>
+      <div class="border-t border-slate-100 px-4 py-4 text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">{props.children}</div>
     </details>
   );
 }
@@ -32,19 +32,19 @@ export default function About() {
   return (
     <main class="mx-auto max-w-3xl px-4 py-12">
       <section class="text-center">
-        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
           Private by design. Everything runs in your browser.
         </h1>
-        <p class="mx-auto mt-3 max-w-2xl text-slate-600">
+        <p class="mx-auto mt-3 max-w-2xl text-slate-600 dark:text-slate-300">
           This site has no backend server — no database, no accounts, no logs. Every line of code runs on{' '}
-          <span class="font-semibold text-slate-800">your</span> device. There is nothing here that could know what you
+          <span class="font-semibold text-slate-800 dark:text-slate-100">your</span> device. There is nothing here that could know what you
           make, store, or visit.
         </p>
       </section>
 
       <section class="mt-12">
-        <h2 class="text-xl font-bold text-slate-900">Everything happens on your device</h2>
-        <p class="mt-2 text-sm text-slate-600">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Everything happens on your device</h2>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
           When you open this site, your browser downloads the app and runs it locally. Designing a code, rendering the
           QR image, downloading it — it's all done by your own computer, in real time, with no one else in the loop.
         </p>
@@ -61,7 +61,7 @@ export default function About() {
           <Disclosure summary={'Then why is there a "sign in" button?'}>
             <p>
               Signing in is the one feature that involves someone else's computer — and even then, not ours. It exists
-              only so you can save <span class="font-semibold text-slate-700">editable</span> QR codes to your own
+              only so you can save <span class="font-semibold text-slate-700 dark:text-slate-200">editable</span> QR codes to your own
               atproto personal data server (PDS). The rest of the app works completely without it.
             </p>
           </Disclosure>
@@ -69,17 +69,17 @@ export default function About() {
       </section>
 
       <section class="mt-12">
-        <h2 class="text-xl font-bold text-slate-900">Why sign in with your Bluesky account?</h2>
-        <p class="mt-2 text-sm text-slate-600">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Why sign in with your Bluesky account?</h2>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
           Instead of creating a new account on yet another website, this app uses atproto — the open protocol behind
-          Bluesky — so that <span class="font-semibold text-slate-800">your data lives with you</span>, not with us.
+          Bluesky — so that <span class="font-semibold text-slate-800 dark:text-slate-100">your data lives with you</span>, not with us.
         </p>
 
         <Show
           when={profile()}
           fallback={
-            <div class="mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-5">
-              <p class="text-sm text-slate-600">
+            <div class="mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-5 dark:border-slate-600 dark:bg-slate-900">
+              <p class="text-sm text-slate-600 dark:text-slate-300">
                 Sign in to see exactly which server would hold your codes.
               </p>
               <A
@@ -92,15 +92,15 @@ export default function About() {
           }
         >
           {(p) => (
-            <div class="mt-5 rounded-xl border border-sky-200 bg-sky-50 p-5">
-              <p class="text-sm font-medium text-sky-900">
+            <div class="mt-5 rounded-xl border border-sky-200 bg-sky-50 p-5 dark:border-sky-500/30 dark:bg-sky-500/10">
+              <p class="text-sm font-medium text-sky-900 dark:text-sky-100">
                 You're signed in as <span class="font-semibold">{p().handle}</span>.
               </p>
-              <p class="mt-1 text-sm text-sky-900">Your QR codes are stored on your personal data server:</p>
-              <p class="mt-2 break-all rounded-lg border border-sky-100 bg-white px-3 py-2 font-mono text-sm text-slate-800">
+              <p class="mt-1 text-sm text-sky-900 dark:text-sky-100">Your QR codes are stored on your personal data server:</p>
+              <p class="mt-2 break-all rounded-lg border border-sky-100 bg-white px-3 py-2 font-mono text-sm text-slate-800 dark:border-sky-500/30 dark:bg-slate-800 dark:text-slate-200">
                 {pdsUrl()}
               </p>
-              <p class="mt-2 text-xs text-sky-700">
+              <p class="mt-2 text-xs text-sky-700 dark:text-sky-300">
                 That's the only server involved. This site never sees your codes — your browser writes them directly to
                 your PDS, and reads them straight back when someone opens a code's page.
               </p>
@@ -120,7 +120,7 @@ export default function About() {
           </Disclosure>
           <Disclosure summary="Where do my saved codes live?">
             <p>
-              Each saved code is a small record in your <span class="font-semibold text-slate-700">personal data
+              Each saved code is a small record in your <span class="font-semibold text-slate-700 dark:text-slate-200">personal data
               server (PDS)</span> — the server your atproto account belongs to. That might be Bluesky's infrastructure,
               a host you chose, or a server you run yourself. The record is just data: the code's content and its
               styling. There's no copy on this site, because this site has nowhere to store one.
@@ -151,7 +151,7 @@ export default function About() {
       </section>
 
       <section class="mt-12">
-        <h2 class="text-xl font-bold text-slate-900">Frequently asked questions</h2>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Frequently asked questions</h2>
         <div class="mt-4 space-y-3">
           <Disclosure summary="What happens to my codes if this website goes down?">
             <p>
@@ -175,7 +175,7 @@ export default function About() {
           </Disclosure>
           <Disclosure summary="What is a PDS?">
             <p>
-              A <span class="font-semibold text-slate-700">Personal Data Server</span> is the server that holds your
+              A <span class="font-semibold text-slate-700 dark:text-slate-200">Personal Data Server</span> is the server that holds your
               atproto account's data. You get to choose it: it could be run by your provider, a third party you trust,
               or yourself. Because atproto is an open protocol, your data is portable — you can switch servers without
               losing your stuff. That's what makes "owning" your data real rather than a slogan.
@@ -190,13 +190,13 @@ export default function About() {
           </Disclosure>
           <Disclosure summary="What's the difference between fixed and dynamic codes?">
             <p>
-              A <span class="font-semibold text-slate-700">fixed</span> code encodes your data directly in the QR
+              A <span class="font-semibold text-slate-700 dark:text-slate-200">fixed</span> code encodes your data directly in the QR
               image, just like any other QR generator. Saving it just stores a copy on your PDS for convenience. The
               data stays locked afterwards so the printed image keeps matching what you made — you can restyle the
               appearance freely, but changing the data produces a new image, so it's gated behind a confirmation.
             </p>
             <p class="mt-2">
-              A <span class="font-semibold text-slate-700">dynamic</span> code encodes a link back to this app instead
+              A <span class="font-semibold text-slate-700 dark:text-slate-200">dynamic</span> code encodes a link back to this app instead
               (e.g. <span class="font-mono">https://atproto-qr.app/you/your-code</span>). When someone scans it, they
               land on the code's page, which reads the record from your PDS and shows the current data. You can change
               the data anytime — the printed QR never changes, because the image always points at the same page.
@@ -204,7 +204,7 @@ export default function About() {
           </Disclosure>
           <Disclosure summary="Can I put a file in a QR code?">
             <p>
-              Yes — the <span class="font-semibold text-slate-700">file</span> content type lets you attach a single
+              Yes — the <span class="font-semibold text-slate-700 dark:text-slate-200">file</span> content type lets you attach a single
               file (up to 25 MB). The file is uploaded as an atproto blob to your own PDS, and the QR encodes a link
               straight to that blob, so scanning it downloads the file. As with everything here, the bytes live on
               your server — this site never touches them.
@@ -227,7 +227,7 @@ export default function About() {
           <Disclosure summary="What happens to my URL when I rename a code?">
             <p>
               Renaming a code keeps the old link working. When you rename, we write a small
-              <span class="font-semibold text-slate-700"> redirect record</span> at the old name that points to the new
+              <span class="font-semibold text-slate-700 dark:text-slate-200"> redirect record</span> at the old name that points to the new
               one, so anything already printed keeps scanning to the right place. The redirect record carries a visible
               note — "DO NOT DELETE — this record keeps previously printed QR codes working" — for anyone poking around
               their PDS in tools like pdsls. Each code's latest record also keeps a list of every name it has ever had.

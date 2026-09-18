@@ -124,18 +124,18 @@ export default function Home() {
   return (
     <main class="mx-auto max-w-6xl px-4 py-8">
       <section class="mb-8 text-center">
-        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
           Beautiful QR codes, designed and yours.
         </h1>
-        <p class="mx-auto mt-3 max-w-2xl text-slate-600">
+        <p class="mx-auto mt-3 max-w-2xl text-slate-600 dark:text-slate-300">
           Style a QR code in seconds, download it anywhere — or sign in to save it as a{' '}
-          <span class="font-semibold text-slate-800">fixed</span> or{' '}
-          <span class="font-semibold text-slate-800">dynamic</span> code that lives on your own Bluesky account.
+          <span class="font-semibold text-slate-800 dark:text-slate-100">fixed</span> or{' '}
+          <span class="font-semibold text-slate-800 dark:text-slate-100">dynamic</span> code that lives on your own Bluesky account.
         </p>
       </section>
 
       <Show when={saveError()}>
-        <p class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{saveError()}</p>
+        <p class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">{saveError()}</p>
       </Show>
 
       <Studio

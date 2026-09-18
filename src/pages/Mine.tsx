@@ -108,14 +108,14 @@ export default function Mine() {
       <Show
         when={authReady()}
         fallback={
-          <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600" />
+          <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-500" />
         }
       >
         <Show
           when={profile()}
           fallback={
-            <div class="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-              <h1 class="text-xl font-bold text-slate-900">Sign in to see your QR codes</h1>
+            <div class="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+              <h1 class="text-xl font-bold text-slate-900 dark:text-white">Sign in to see your QR codes</h1>
               <a href="/login" class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white">
                 Sign in
               </a>
@@ -126,8 +126,8 @@ export default function Mine() {
             <>
               <div class="mb-6 flex items-center justify-between">
                 <div>
-                  <h1 class="text-2xl font-bold text-slate-900">My QR codes</h1>
-                  <p class="text-sm text-slate-500">
+                  <h1 class="text-2xl font-bold text-slate-900 dark:text-white">My QR codes</h1>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">
                     {entries().length} saved as <span class="font-mono">{p().handle}</span>
                   </p>
                 </div>
@@ -141,12 +141,12 @@ export default function Mine() {
               </div>
 
               <Show when={error()}>
-                <p class="mb-4 text-sm text-red-600">{error()}</p>
+                <p class="mb-4 text-sm text-red-600 dark:text-red-400">{error()}</p>
               </Show>
 
               <Show when={entries().length === 0 && !error()}>
-                <div class="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-                  <p class="text-slate-600">No QR codes yet.</p>
+                <div class="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center dark:border-slate-600 dark:bg-slate-900">
+                  <p class="text-slate-600 dark:text-slate-300">No QR codes yet.</p>
                   <a href="/" class="mt-2 inline-block text-sm font-semibold text-sky-600">
                     Create your first one →
                   </a>
@@ -183,42 +183,42 @@ function renderQR(
       ? String(entry.record.content.fields.name ?? '')
       : payload;
   return (
-    <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+    <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
       <A
         href={`${url}/edit`}
         title="Edit"
-        class="block h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50 transition hover:opacity-80"
+        class="block h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50 transition hover:opacity-80 dark:bg-slate-800"
       >
         <RecordThumb payload={payload} style={entry.record.style} />
       </A>
       <div class="min-w-0 flex-1">
-        <p class="flex items-center gap-2 text-sm font-semibold text-slate-900">
+        <p class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
           <A href={`${url}/edit`} class="truncate transition hover:text-sky-600 hover:underline">
             {entry.rkey}
           </A>
           <span
             class={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-              kind === 'dynamic' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'
+              kind === 'dynamic' ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
             {kind}
           </span>
         </p>
-        <p class="truncate text-xs text-slate-500">
+        <p class="truncate text-xs text-slate-500 dark:text-slate-400">
           {entry.record.content.type} · {subtitle || '—'} · {entry.record.updatedAt.slice(0, 10)}
         </p>
       </div>
       <div class="flex shrink-0 items-center gap-1">
-        <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+        <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
           View
         </A>
-        <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
+        <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-500/10">
           Edit
         </A>
         <button
           type="button"
           onClick={() => onDelete(entry.rkey, entry.record.aliases)}
-          class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
         >
           Delete
         </button>
@@ -234,34 +234,34 @@ function renderRedirect(
 ) {
   const url = `/${p.handle}/${entry.rkey}`;
   return (
-    <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-      <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-500">
+    <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+      <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
       <div class="min-w-0 flex-1">
-        <p class="flex items-center gap-2 truncate text-sm font-semibold text-slate-900">
-          <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+        <p class="flex items-center gap-2 truncate text-sm font-semibold text-slate-900 dark:text-white">
+          <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
             Redirect
           </span>
           {entry.rkey} → {entry.target}
         </p>
-        <p class="truncate text-xs text-slate-500">
+        <p class="truncate text-xs text-slate-500 dark:text-slate-400">
           {entry.stamp ? entry.stamp.slice(0, 10) : ''} · keeps old printed QR Codes working
         </p>
       </div>
       <div class="flex shrink-0 items-center gap-1">
-        <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+        <A href={url} target="_blank" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
           View
         </A>
-        <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50">
+        <A href={`${url}/edit`} class="rounded-lg px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-500/10">
           Edit
         </A>
         <button
           type="button"
           onClick={() => onDelete(entry.rkey)}
-          class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
         >
           Delete
         </button>

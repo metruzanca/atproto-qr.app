@@ -105,9 +105,9 @@ export default function Login() {
       <Show
         when={profile()}
         fallback={
-          <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h1 class="text-2xl font-bold text-slate-900">Sign in with atproto</h1>
-            <p class="mt-2 text-sm text-slate-600">
+          <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Sign in with atproto</h1>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
               Enter your handle (e.g. <span class="font-mono">alice.bsky.social</span>). You'll be redirected to your
               provider to authorize this app. Your QR codes are stored as records in{' '}
               <span class="font-semibold">your</span> Bluesky account — not on our servers.
@@ -119,7 +119,7 @@ export default function Login() {
                     <img
                       src={selected()!.avatar ?? undefined}
                       alt=""
-                      class="pointer-events-none absolute left-2 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-slate-200"
+                      class="pointer-events-none absolute left-2 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-slate-200 dark:bg-slate-700"
                     />
                   </Show>
                   <TextInput
@@ -137,7 +137,7 @@ export default function Login() {
                   />
                   <Show when={open()}>
                     <ul
-                      class="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg"
+                      class="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
                       role="listbox"
                     >
                       <For each={suggestions()}>
@@ -149,21 +149,21 @@ export default function Login() {
                             onMouseEnter={() => setActiveIndex(i())}
                             onClick={() => select(s)}
                             class={`flex cursor-pointer items-center gap-3 px-3 py-2 ${
-                              activeIndex() === i() ? 'bg-sky-50' : 'hover:bg-slate-50'
+                              activeIndex() === i() ? 'bg-sky-50 dark:bg-sky-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                           >
                             <Show when={s.avatar}>
                               <img
                                 src={s.avatar ?? undefined}
                                 alt=""
-                                class="h-7 w-7 rounded-full bg-slate-200"
+                                class="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-700"
                                 referrerPolicy="no-referrer"
                               />
                             </Show>
                             <div class="min-w-0">
-                              <p class="truncate text-sm font-semibold text-slate-900">{s.handle}</p>
+                              <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{s.handle}</p>
                               <Show when={s.displayName}>
-                                <p class="truncate text-xs text-slate-500">{s.displayName}</p>
+                                <p class="truncate text-xs text-slate-500 dark:text-slate-400">{s.displayName}</p>
                               </Show>
                             </div>
                           </li>
@@ -174,7 +174,7 @@ export default function Login() {
                 </div>
               </Field>
               <Show when={error()}>
-                <p class="text-sm text-red-600">{error()}</p>
+                <p class="text-sm text-red-600 dark:text-red-400">{error()}</p>
               </Show>
               <button
                 type="submit"
@@ -188,9 +188,9 @@ export default function Login() {
         }
       >
         {(p) => (
-          <div class="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <p class="text-sm text-slate-600">
-              You're signed in as <span class="font-semibold text-slate-900">{p().handle}</span>.
+          <div class="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+            <p class="text-sm text-slate-600 dark:text-slate-300">
+              You're signed in as <span class="font-semibold text-slate-900 dark:text-white">{p().handle}</span>.
             </p>
             <a href="/codes" class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white">
               Go to my QR codes

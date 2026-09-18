@@ -104,28 +104,28 @@ export default function QRPublic() {
   return (
     <main class="mx-auto max-w-2xl px-4 py-12">
       <Show when={status() === 'loading'}>
-        <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600" />
+        <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-500" />
       </Show>
 
       <Show when={status() === 'notfound'}>
-        <div class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-          <h1 class="text-xl font-bold text-slate-900">QR code not found</h1>
-          <p class="mt-2 text-sm text-slate-600">
+        <div class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+          <h1 class="text-xl font-bold text-slate-900 dark:text-white">QR code not found</h1>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
             We couldn't find this code on the owner's Bluesky account. It may have been deleted.
           </p>
         </div>
       </Show>
 
       <Show when={status() === 'found' && content() && style()}>
-        <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
           <div class="flex items-center justify-between">
             <div class="min-w-0">
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{content()!.type}</p>
-              <h1 class="mt-1 flex items-center gap-2 truncate text-xl font-bold text-slate-900">
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{content()!.type}</p>
+              <h1 class="mt-1 flex items-center gap-2 truncate text-xl font-bold text-slate-900 dark:text-white">
                 <span class="truncate">{content()!.title}</span>
                 <span
                   class={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                    content()!.kind === 'dynamic' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'
+                    content()!.kind === 'dynamic' ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                   }`}
                 >
                   {content()!.kind}
@@ -145,17 +145,17 @@ export default function QRPublic() {
           <Show
             when={content()!.type === 'file' && file()}
             fallback={
-              <div class="mt-6 flex justify-center rounded-lg bg-slate-50 p-8">
+              <div class="mt-6 flex justify-center rounded-lg bg-slate-50 p-8 dark:bg-slate-800">
                 <QRPreview data={content()!.value} style={style()!} class="max-w-full" />
               </div>
             }
           >
             {(f) => (
               <div class="mt-6">
-                <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
                   <div class="min-w-0">
-                    <p class="truncate text-sm font-semibold text-slate-900">{f().name || 'file'}</p>
-                    <p class="mt-0.5 text-xs text-slate-500">
+                    <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{f().name || 'file'}</p>
+                    <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                       {f().mimeType || 'unknown type'} · {formatSize(f().size)}
                     </p>
                   </div>
@@ -171,14 +171,14 @@ export default function QRPublic() {
                       href={f().blobUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                      class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                     >
                       Open
                     </a>
                   </div>
                 </div>
                 <Show when={f().mimeType.startsWith('image/') && f().blobUrl}>
-                  <div class="mt-4 flex justify-center rounded-lg bg-slate-50 p-4">
+                  <div class="mt-4 flex justify-center rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
                     <img src={f().blobUrl} alt={f().name} class="max-h-96 max-w-full object-contain" />
                   </div>
                 </Show>
@@ -186,16 +186,16 @@ export default function QRPublic() {
                   <iframe
                     src={f().blobUrl}
                     title={f().name}
-                    class="mt-4 h-96 w-full rounded-lg border border-slate-200 bg-slate-50"
+                    class="mt-4 h-96 w-full rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800"
                   />
                 </Show>
               </div>
             )}
           </Show>
 
-          <div class="mt-6 break-all rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Encoded data</p>
-            <p class="mt-1 text-sm text-slate-700">{content()!.value}</p>
+          <div class="mt-6 break-all rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Encoded data</p>
+            <p class="mt-1 text-sm text-slate-700 dark:text-slate-200">{content()!.value}</p>
           </div>
         </div>
       </Show>

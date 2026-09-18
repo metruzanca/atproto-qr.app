@@ -351,7 +351,7 @@ function FileField(props: {
   return (
     <Field label="File" hint="One file, up to 25 MB.">
       <Show when={!props.onUploadFile}>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
           <A href={props.loginHref ?? '/login'} class="font-semibold text-sky-600 hover:underline">
             Sign in
           </A>{' '}
@@ -371,20 +371,20 @@ function FileField(props: {
                 e.currentTarget.value = '';
                 if (file) void handleFile(file);
               }}
-              class="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800 disabled:opacity-60"
+              class="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800 disabled:opacity-60 dark:text-slate-300 dark:file:bg-slate-700 dark:hover:file:bg-slate-600"
             />
           }
         >
-          <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-            <p class="truncate text-sm font-semibold text-slate-900">{String(props.fields.name ?? '')}</p>
-            <p class="mt-0.5 text-xs text-slate-500">
+          <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800">
+            <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{String(props.fields.name ?? '')}</p>
+            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {formatSize(Number(props.fields.size ?? 0))} · {String(props.fields.mimeType ?? '')}
             </p>
             <div class="mt-3 flex gap-2">
               <label
                 class={`cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 ${
                   props.disabled ? 'pointer-events-none opacity-60' : ''
-                }`}
+                } dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600`}
               >
                 Replace
                 <input
@@ -402,7 +402,7 @@ function FileField(props: {
                 type="button"
                 disabled={props.disabled || uploading()}
                 onClick={() => props.onChange({ name: '', mimeType: '', size: 0, blob: null })}
-                class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:opacity-60"
+                class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:opacity-60 dark:border-red-500/30 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
               >
                 Remove
               </button>
@@ -412,10 +412,10 @@ function FileField(props: {
       </Show>
 
       <Show when={uploading()}>
-        <p class="mt-1 text-xs text-slate-500">Uploading…</p>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Uploading…</p>
       </Show>
       <Show when={error()}>
-        <p class="mt-1 text-xs text-red-600">{error()}</p>
+        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{error()}</p>
       </Show>
     </Field>
   );

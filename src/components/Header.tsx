@@ -2,15 +2,16 @@ import { Show } from 'solid-js';
 import { A, useNavigate } from '@solidjs/router';
 
 import { profile, signOut } from '../lib/atproto/auth';
+import { ThemeMenu } from './ThemeMenu';
 
 export function Header() {
   const navigate = useNavigate();
 
   return (
-    <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
+    <header class="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
       <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <A href="/" class="flex items-center gap-2 font-bold text-slate-900">
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
+        <A href="/" class="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900">
             <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 12v4a1 1 0 0 1-1 1h-4" />
               <path d="M17 3h2a2 2 0 0 1 2 2v2" />
@@ -28,17 +29,18 @@ export function Header() {
         <nav class="flex items-center gap-1">
           <A
             href="/about"
-            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             About
           </A>
           <A
             href="/codes"
             inactiveClass="hidden sm:block"
-            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             My QR codes
           </A>
+          <ThemeMenu />
           <Show
             when={profile()}
             fallback={
@@ -55,22 +57,22 @@ export function Header() {
               <div class="flex items-center gap-2">
                 <A
                   href="/codes"
-                  class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 hover:bg-slate-100"
+                  class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <img
                     src={p().avatar ?? undefined}
                     alt=""
-                    class="h-7 w-7 rounded-full bg-slate-200"
+                    class="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-700"
                     referrerPolicy="no-referrer"
                   />
-                  <span class="max-w-32 truncate text-sm font-medium text-slate-700">
+                  <span class="max-w-32 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
                     {p().displayName ?? p().handle}
                   </span>
                 </A>
                 <button
                   type="button"
                   onClick={() => signOut()}
-                  class="rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  class="rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                   title="Sign out"
                 >
                   Sign out

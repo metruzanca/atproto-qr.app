@@ -7,6 +7,8 @@ import type { QRRecord } from '../qr/record';
 
 export const COLLECTION = 'app.atproto-qr.qr';
 export const REDIRECT_COLLECTION = 'app.atproto-qr.redirect';
+export const SETTINGS_COLLECTION = 'app.atproto-qr.settings';
+export const SETTINGS_RKEY = 'preferences';
 
 export const REDIRECT_NOTE =
   'DO NOT DELETE — this record keeps previously printed QR codes working. Deleting it will break the URL it was printed under.';
@@ -158,6 +160,43 @@ export async function putRedirectRecord(
   });
   if (!res.ok) {
     throw new Error(res.data.error ?? 'failed to save redirect');
+  }
+}
+
+export type ThemeSetting = 'light' | 'dark' | 'system';
+
+export interface SettingsRecord {
+  $type: typeof SETTINGS_COLLECTION;
+  theme: ThemeSetting;
+  updatedAt: string;
+}
+
+export async function getSettingsRecord(pdsUrl: string, repo: string): Promise<SettingsRecord | null> {
+  const client = publicClient(pdsUrl);
+  const res = await client.get('com.atproto.repo.getRecord', {
+    params: { repo: repo as ActorIdentifier, collection: SETTINGS_COLLECTION, rkey: SETTINGS_RKEY },
+  });
+  if (!res.ok) {
+    return null;
+  }
+  const value = res.data.value as unknown as SettingsRecord;
+  if (value && (value.theme === 'light' || value.theme === 'dark' || value.theme === 'system')) {
+    return value;
+  }
+  return null;
+}
+
+export async function putSettingsRecord(client: Client, repo: string, record: SettingsRecord): Promise<void> {
+  const res = await client.post('com.atproto.repo.putRecord', {
+    input: {
+      repo: repo as ActorIdentifier,
+      collection: SETTINGS_COLLECTION,
+      rkey: SETTINGS_RKEY,
+      record: record as unknown as Record<string, unknown>,
+    },
+  });
+  if (!res.ok) {
+    throw new Error(res.data.error ?? 'failed to save settings');
   }
 }
 

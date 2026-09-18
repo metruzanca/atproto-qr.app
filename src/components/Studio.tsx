@@ -66,8 +66,8 @@ export function Studio(props: Props) {
     <div class="grid gap-8 lg:grid-cols-2">
       <div class="space-y-8">
         <Show when={props.onKindChange}>
-          <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Code type</h2>
+          <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+            <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Code type</h2>
             <Segmented
               value={props.kind}
               options={[
@@ -78,25 +78,25 @@ export function Studio(props: Props) {
             />
 
             <Show when={props.kind === 'fixed'}>
-              <p class="mt-3 text-xs leading-relaxed text-slate-500">
+              <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                 Fixed: the QR encodes your data directly. After saving, the data is locked — you can change the look,
                 but the printed image stays the same.
               </p>
             </Show>
 
             <Show when={props.kind === 'dynamic' && props.onSave}>
-              <p class="mt-3 text-xs leading-relaxed text-slate-500">
+              <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                 Dynamic: the QR encodes a link back to this app. You can change the data any time — the printed QR
                 never changes.
               </p>
             </Show>
 
             <Show when={props.kind === 'dynamic' && !props.onSave && props.loginHref}>
-              <div class="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-4">
-                <h3 class="text-sm font-semibold text-sky-900">How dynamic codes work</h3>
-                <p class="mt-1 text-xs leading-relaxed text-sky-800">
+              <div class="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-4 dark:border-sky-500/30 dark:bg-sky-500/10">
+                <h3 class="text-sm font-semibold text-sky-900 dark:text-sky-100">How dynamic codes work</h3>
+                <p class="mt-1 text-xs leading-relaxed text-sky-800 dark:text-sky-200">
                   Print once, update any time. The code never changes, and always shows your latest info.{' '}
-                  <A href="/about" class="font-semibold text-sky-700 hover:underline">
+                  <A href="/about" class="font-semibold text-sky-700 hover:underline dark:text-sky-300">
                     Learn more →
                   </A>
                 </p>
@@ -113,8 +113,8 @@ export function Studio(props: Props) {
           </section>
         </Show>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Content</h2>
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Content</h2>
           <div class="relative">
             <ContentFields
               content={props.draft.content}
@@ -125,10 +125,10 @@ export function Studio(props: Props) {
             />
 
             <Show when={props.contentLocked}>
-              <div class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70 backdrop-blur-[1px]">
+              <div class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70 backdrop-blur-[1px] dark:bg-slate-900/70">
                 <button
                   type="button"
-                  class="group flex flex-col items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-4 shadow-md transition hover:border-sky-400 hover:shadow-lg"
+                  class="group flex flex-col items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-4 shadow-md transition hover:border-sky-400 hover:shadow-lg dark:border-slate-600 dark:bg-slate-800"
                   onClick={() => setShowUnlockModal(true)}
                   aria-label="Unlock data editing"
                 >
@@ -139,7 +139,7 @@ export function Studio(props: Props) {
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    class="h-7 w-7 text-slate-600 group-hover:hidden"
+                    class="h-7 w-7 text-slate-600 group-hover:hidden dark:text-slate-300"
                   >
                     <rect x="4" y="11" width="16" height="10" rx="2" />
                     <path d="M8 11V7a4 4 0 0 1 8 0v4" />
@@ -156,23 +156,23 @@ export function Studio(props: Props) {
                     <rect x="4" y="11" width="16" height="10" rx="2" />
                     <path d="M8 11V7a4 4 0 0 1 7.9-1" />
                   </svg>
-                  <span class="text-xs font-semibold text-slate-700">Edit data</span>
+                  <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Edit data</span>
                 </button>
               </div>
             </Show>
           </div>
         </section>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Style</h2>
+        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Style</h2>
           <StyleControls style={props.draft.style} onChange={(style) => props.onChange({ ...props.draft, style })} />
         </section>
       </div>
 
       <div class="lg:sticky lg:top-6 lg:self-start">
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">Preview</h2>
-          <div class="flex justify-center rounded-lg bg-slate-50 p-6">
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Preview</h2>
+          <div class="flex justify-center rounded-lg bg-slate-50 p-6 dark:bg-slate-800">
             <QRPreview
               data={data()}
               style={props.draft.style}
@@ -183,7 +183,7 @@ export function Studio(props: Props) {
           </div>
 
           <Show when={props.kind === 'dynamic' && data()}>
-            <p class="mt-2 break-all text-center text-xs text-slate-500">
+            <p class="mt-2 break-all text-center text-xs text-slate-500 dark:text-slate-400">
               QR encodes: <span class="font-mono">{data()}</span>
             </p>
           </Show>
@@ -192,7 +192,7 @@ export function Studio(props: Props) {
             <div class="mt-5">
               <div class="flex items-end gap-2">
                 <div class="flex-1">
-                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Name
                   </label>
                   <TextInput
@@ -205,13 +205,13 @@ export function Studio(props: Props) {
                 <button
                   type="button"
                   onClick={() => props.onGenerateName?.()}
-                  class="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  class="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                 >
                   Generate
                 </button>
               </div>
               <Show when={props.nameError}>
-                <p class="mt-1 text-xs text-red-600">{props.nameError}</p>
+                <p class="mt-1 text-xs text-red-600 dark:text-red-400">{props.nameError}</p>
               </Show>
             </div>
 
@@ -219,7 +219,7 @@ export function Studio(props: Props) {
               type="button"
               onClick={() => props.onSave?.()}
               disabled={!data() || props.saving || Boolean(props.nameError)}
-              class="mt-4 w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
+              class="mt-4 w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 dark:bg-slate-700 dark:hover:bg-slate-600"
             >
               {props.saving ? 'Saving…' : 'Save changes'}
             </button>
@@ -238,7 +238,7 @@ export function Studio(props: Props) {
               <button
                 type="button"
                 onClick={() => download('svg')}
-                class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 Download SVG
               </button>
@@ -246,7 +246,7 @@ export function Studio(props: Props) {
                 <button
                   type="button"
                   onClick={copyLink}
-                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                 >
                   {copied() ? 'Copied!' : 'Copy link'}
                 </button>
@@ -255,8 +255,8 @@ export function Studio(props: Props) {
           </Show>
 
           <Show when={props.savedUrl}>
-            <p class="mt-3 break-all text-xs text-slate-500">
-              <span class="font-semibold text-slate-700">Public URL:</span>{' '}
+            <p class="mt-3 break-all text-xs text-slate-500 dark:text-slate-400">
+              <span class="font-semibold text-slate-700 dark:text-slate-200">Public URL:</span>{' '}
               <a
                 href={props.savedUrl ?? undefined}
                 target="_blank"
