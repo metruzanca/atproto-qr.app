@@ -133,11 +133,9 @@ export default function About() {
               Neither the traffic nor the content ever passes through a server we control.
             </p>
             <p class="mt-2">
-              One honest caveat: "no analytics" is literal — this site has no tracking of any kind. But atproto itself
-              is a public network. The moment you save a code, its record is broadcast to relays and the public
-              firehose, and anyone can query the network for every record of type{' '}
-              <span class="font-mono">app.atproto-qr.qr</span> — content, styling, and all. That's how the protocol
-              works, not a choice we made, and it's the flip side of data you can take anywhere.
+              The honest caveat is about atproto, not about us: it's a public network. The moment you save a code, its
+              record is queryable by anyone — content, styling, and all. That's the catch that makes this free. See
+              "Can I make a secret QR code?" below for what that means in practice.
             </p>
           </Disclosure>
           <Disclosure summary="So the only server involved is mine?">
@@ -152,7 +150,31 @@ export default function About() {
 
       <section class="mt-12">
         <h2 class="text-xl font-bold text-slate-900 dark:text-white">Frequently asked questions</h2>
+        <p class="mt-2 text-sm text-slate-600">
+          Free things usually have a catch. Here's ours, up front: everything you save is public. That's the trade —
+          this stays free because your codes are readable by anyone, and it's worth understanding before you save
+          anything sensitive.
+        </p>
         <div class="mt-4 space-y-3">
+          <Disclosure summary="Can I make a secret QR code?">
+            <p>
+              No. Saved codes live as records in your PDS, and atproto is a public network — anyone can query
+              everything stored under your handle at any time. For example, the records behind my own codes are
+              publicly browsable:{' '}
+              <a
+                href="https://pdsls.dev/at://metru.dev/app.atproto-qr.qr"
+                class="font-mono text-sky-700 underline hover:text-sky-800"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                https://pdsls.dev/at://metru.dev/app.atproto-qr.qr
+              </a>
+              . So treat this as a public store, not a secret one. In practice the risk is low — why would anyone go
+              digging through your QR records? — but "nobody's likely to look" isn't the same as "nobody can." If a
+              code's content must stay private, don't save it here; generate it in the anonymous studio instead, where
+              nothing is ever written to your account.
+            </p>
+          </Disclosure>
           <Disclosure summary="What happens to my codes if this website goes down?">
             <p>
               Your records would be safe, but the friendly links would not. The data itself lives on your PDS, not
