@@ -1,4 +1,4 @@
-import { contentToValue, CONTENT_TYPES, defaultFields, type Content, type ContentType } from './content';
+import { contentToValue, CONTENT_TYPES, defaultFields, type Content, type ContentContext, type ContentType } from './content';
 import { DEFAULT_STYLE, type QRStyle } from './style';
 
 export const COLLECTION = 'app.atproto-qr.qr';
@@ -35,11 +35,11 @@ export function makeRecord(draft: Draft, existing?: QRRecord): QRRecord {
   };
 }
 
-export function qrValueFor(record: QRRecord, fallback?: string): string {
+export function qrValueFor(record: QRRecord, fallback?: string, ctx?: ContentContext): string {
   if (record.kind === 'dynamic') {
     return record.qrValue ?? fallback ?? '';
   }
-  return contentToValue(record.content);
+  return contentToValue(record.content, ctx);
 }
 
 export function isValidRecord(value: unknown): value is QRRecord {
@@ -65,10 +65,12 @@ export function draftToParams(draft: Draft): URLSearchParams {
     params.set('t', type);
   }
 
-  for (const key of Object.keys(defaults)) {
-    const value = fields[key] ?? defaults[key];
-    if (value !== defaults[key]) {
-      params.set(key, String(value));
+  if (type !== 'file') {
+    for (const key of Object.keys(defaults)) {
+      const value = fields[key] ?? defaults[key];
+      if (value !== defaults[key]) {
+        params.set(key, String(value));
+      }
     }
   }
 

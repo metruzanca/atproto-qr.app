@@ -46,9 +46,9 @@ Rename flow (`src/pages/Editor.tsx`): validate name unique → `com.atproto.repo
 ## Key source files
 
 - `src/lib/atproto/auth.ts` — `configureOAuth`, session store, sign-in/out, profile. `CLIENT_ID` differs dev (loopback) vs prod (metadata URL derived from `VITE_PUBLIC_ORIGIN`).
-- `src/lib/atproto/records.ts` — record CRUD: `createQRRecord` (atomic name-uniqueness via createRecord), `putQRRecord`, `putRedirectRecord`, `getQRRecord`/`getRedirectRecord`, `listQRRecords`, `listAllNames` (QR + redirect keys for uniqueness), `cascadeDeleteQRRecord`.
-- `src/lib/qr/content.ts` — 10 content types → payload string serializers (`contentToValue`); `codeUrl(handle, name)` → `{origin}/{handle}/{name}`.
-- `src/lib/qr/record.ts` — `QRRecord`/`Draft` types, `makeRecord`, `isValidRecord`, `qrValueFor(record, fallback)` (effective QR payload: dynamic → `qrValue`, else `contentToValue`).
+- `src/lib/atproto/records.ts` — record CRUD: `createQRRecord` (atomic name-uniqueness via createRecord), `putQRRecord`, `putRedirectRecord`, `getQRRecord`/`getRedirectRecord`, `listQRRecords`, `listAllNames` (QR + redirect keys for uniqueness), `cascadeDeleteQRRecord`, `uploadFile` (`com.atproto.repo.uploadBlob` → blob ref for the `file` content type).
+- `src/lib/qr/content.ts` — 11 content types → payload string serializers (`contentToValue`); `codeUrl(handle, name)` → `{origin}/{handle}/{name}`. File type stores a `BlobRef` in fields; its QR payload (getBlob URL `{pds}/xrpc/com.atproto.sync.getBlob?did={did}&cid={cid}`) is **recomputed at render** from `ContentContext { pdsUrl, did }` (pass into `contentToValue`/`qrValueFor`), never stored.
+- `src/lib/qr/record.ts` — `QRRecord`/`Draft` types, `makeRecord`, `isValidRecord`, `qrValueFor(record, fallback, ctx?)` (effective QR payload: dynamic → `qrValue`, else `contentToValue`).
 - `src/lib/qr/style.ts` — serializable `QRStyle` ↔ qr-code-styling options (`styleToOptions`).
 - `src/components/Studio.tsx` — shared generator (kind selector, content + style + preview + download + optional name/save block; `qrData` prop drives the encoded payload, name/save shown for both kinds; `contentLocked` overlays the data form with a padlock that unlocks via `ConfirmDialog`).
 - `src/lib/qr/name.ts` — slug validation, adjective/animal word lists, `generateCodeName`.

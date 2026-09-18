@@ -12,7 +12,7 @@ A beautiful QR code generator with **atproto-backed editable codes**. Pure front
 
 **Dynamic codes** — the QR encodes a link back to the app (`https://atproto-qr.app/{handle}/{name}`, snapshotted into the record at save time). Scan it, land on the code's page, which reads the current record from your PDS and renders the latest data. Change the data anytime — the printed QR never changes.
 
-Both modes share the same studio: 10 content types (URL, text, email, phone, SMS, WiFi, vCard, geo, event, crypto), full styling (colors, shapes, dot styles, embedded image, error-correction level), live preview, and PNG/SVG download.
+Both modes share the same studio: 11 content types (URL, text, email, phone, SMS, WiFi, vCard, geo, event, crypto, **file**), full styling (colors, shapes, dot styles, embedded image, error-correction level), live preview, and PNG/SVG download. The **file** type uploads a single file (up to 25 MB) as an atproto blob on your PDS; its QR encodes the blob URL (`{pds}/xrpc/com.atproto.sync.getBlob?did={did}&cid={cid}`, recomputed at render), so scanning redirects to the file.
 
 ---
 

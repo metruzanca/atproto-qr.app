@@ -2,6 +2,7 @@ import { Client, simpleFetchHandler } from '@atcute/client';
 import type { OAuthUserAgent } from '@atcute/oauth-browser-client';
 import type { ActorIdentifier } from '@atcute/lexicons';
 
+import type { BlobRef } from '../qr/content';
 import type { QRRecord } from '../qr/record';
 
 export const COLLECTION = 'app.atproto-qr.qr';
@@ -16,6 +17,66 @@ export function authedClient(agent: OAuthUserAgent): Client {
 
 export function publicClient(service: string): Client {
   return new Client({ handler: simpleFetchHandler({ service }) });
+}
+
+export interface UploadedFile {
+  name: string;
+  mimeType: string;
+  size: number;
+  blob: BlobRef;
+}
+
+const EXT_MIME: Record<string, string> = {
+  pdf: 'application/pdf',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  avif: 'image/avif',
+  bmp: 'image/bmp',
+  ico: 'image/x-icon',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  ogg: 'audio/ogg',
+  m4a: 'audio/mp4',
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  mov: 'video/quicktime',
+  txt: 'text/plain',
+  md: 'text/markdown',
+  html: 'text/html',
+  csv: 'text/csv',
+  json: 'application/json',
+  zip: 'application/zip',
+  gz: 'application/gzip',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+};
+
+function guessMimeType(file: File): string {
+  if (file.type) return file.type;
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  return EXT_MIME[ext] ?? 'application/octet-stream';
+}
+
+export async function uploadFile(agent: OAuthUserAgent, file: File): Promise<UploadedFile> {
+  const client = authedClient(agent);
+  const mimeType = guessMimeType(file);
+  const res = await client.post('com.atproto.repo.uploadBlob', {
+    input: file,
+    headers: { 'content-type': mimeType },
+  });
+  if (!res.ok) {
+    throw new Error(res.data.message ?? res.data.error ?? 'failed to upload file');
+  }
+  const blob = res.data.blob;
+  return { name: file.name, mimeType: blob.mimeType, size: blob.size, blob };
 }
 
 export class QRNameTakenError extends Error {

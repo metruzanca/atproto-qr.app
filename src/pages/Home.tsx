@@ -2,7 +2,7 @@ import { createEffect, createSignal, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 
 import { agent, profile } from '../lib/atproto/auth';
-import { authedClient, createQRRecord, listAllNames, QRNameTakenError } from '../lib/atproto/records';
+import { authedClient, createQRRecord, listAllNames, QRNameTakenError, uploadFile } from '../lib/atproto/records';
 import { codeUrl, contentToValue, emptyContent } from '../lib/qr/content';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { DEFAULT_STYLE } from '../lib/qr/style';
@@ -75,7 +75,14 @@ export default function Home() {
     if (kind() === 'dynamic') {
       return handle && isValidSlug(v) ? codeUrl(handle, v) : '';
     }
-    return contentToValue(draft().content);
+    const a = agent();
+    return contentToValue(draft().content, { pdsUrl: a?.session.info.aud, did: profile()?.did });
+  };
+
+  const onUploadFile = async (file: File) => {
+    const a = agent();
+    if (!a) throw new Error('not signed in');
+    return uploadFile(a, file);
   };
 
   const save = async () => {
@@ -85,6 +92,11 @@ export default function Home() {
     const err = validateName(v);
     setNameError(err);
     if (!a || !p || err) return;
+    const c = draft().content;
+    if (c.type === 'file' && !c.fields.blob) {
+      setSaveError('Upload a file before saving.');
+      return;
+    }
     setSaving(true);
     setSaveError('');
     try {
@@ -132,6 +144,7 @@ export default function Home() {
         onKindChange={onKindChange}
         qrData={qrData()}
         loginHref="/login"
+        onUploadFile={profile() ? onUploadFile : undefined}
         emptyHint={
           kind() === 'dynamic'
             ? profile()

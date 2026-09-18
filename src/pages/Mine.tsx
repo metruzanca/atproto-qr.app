@@ -25,6 +25,7 @@ export default function Mine() {
   const [items, setItems] = createSignal<QRRecordItem[]>([]);
   const [redirects, setRedirects] = createSignal<RedirectItem[]>([]);
   const [error, setError] = createSignal('');
+  const pdsUrl = () => agent()?.session.info.aud ?? '';
 
   const entries = () => {
     const redirectKeys = new Set(redirects().map((r) => r.rkey));
@@ -156,7 +157,7 @@ export default function Mine() {
                 <For each={entries()}>
                   {(entry) =>
                     entry.kind === 'qr'
-                      ? renderQR(p(), entry, remove)
+                      ? renderQR({ handle: p().handle, did: p().did, pdsUrl: pdsUrl() }, entry, remove)
                       : renderRedirect(p(), entry, removeRedirect)
                   }
                 </For>
@@ -170,13 +171,17 @@ export default function Mine() {
 }
 
 function renderQR(
-  p: { handle: string },
+  p: { handle: string; did: string; pdsUrl: string },
   entry: Entry & { kind: 'qr' },
   onDelete: (rkey: string, aliases: string[] | undefined) => Promise<void>,
 ) {
   const url = `/${p.handle}/${entry.rkey}`;
   const kind = entry.record.kind ?? 'fixed';
-  const payload = qrValueFor(entry.record, codeUrl(p.handle, entry.rkey));
+  const payload = qrValueFor(entry.record, codeUrl(p.handle, entry.rkey), { pdsUrl: p.pdsUrl, did: p.did });
+  const subtitle =
+    entry.record.content.type === 'file'
+      ? String(entry.record.content.fields.name ?? '')
+      : payload;
   return (
     <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
       <div class="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50">
@@ -194,7 +199,7 @@ function renderQR(
           </span>
         </p>
         <p class="truncate text-xs text-slate-500">
-          {entry.record.content.type} · {payload || '—'} · {entry.record.updatedAt.slice(0, 10)}
+          {entry.record.content.type} · {subtitle || '—'} · {entry.record.updatedAt.slice(0, 10)}
         </p>
       </div>
       <div class="flex shrink-0 items-center gap-1">

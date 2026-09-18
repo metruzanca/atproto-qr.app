@@ -202,6 +202,14 @@ export default function About() {
               the data anytime — the printed QR never changes, because the image always points at the same page.
             </p>
           </Disclosure>
+          <Disclosure summary="Can I put a file in a QR code?">
+            <p>
+              Yes — the <span class="font-semibold text-slate-700">file</span> content type lets you attach a single
+              file (up to 25 MB). The file is uploaded as an atproto blob to your own PDS, and the QR encodes a link
+              straight to that blob, so scanning it downloads the file. As with everything here, the bytes live on
+              your server — this site never touches them.
+            </p>
+          </Disclosure>
           <Disclosure summary="What if my PDS is unreachable?">
             <p>
               A code's page can't load while your PDS is down — just like any site that's temporarily offline. The

@@ -14,6 +14,7 @@ import {
   putQRRecord,
   putRedirectRecord,
   QRNameTakenError,
+  uploadFile,
 } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
 import { isValidRecord, makeRecord, type Draft, type QRKind, type QRRecord } from '../lib/qr/record';
@@ -49,7 +50,14 @@ export default function Editor() {
     if (kind() === 'dynamic') {
       return existing()?.qrValue ?? publicUrl();
     }
-    return contentToValue(d.content);
+    const a = agent();
+    return contentToValue(d.content, { pdsUrl: a?.session.info.aud, did: profile()?.did });
+  };
+
+  const onUploadFile = async (file: File) => {
+    const a = agent();
+    if (!a) throw new Error('not signed in');
+    return uploadFile(a, file);
   };
 
   createEffect(async () => {
@@ -135,6 +143,11 @@ export default function Editor() {
     const err = validateName(v);
     setNameError(err);
     if (!d || !a || !p || err) return;
+    const c = d.content;
+    if (c.type === 'file' && !c.fields.blob) {
+      setError('Upload a file before saving.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
@@ -306,6 +319,7 @@ export default function Editor() {
               onUnlockContent={() => setUnlocked(true)}
               qrData={qrData()}
               savedUrl={publicUrl()}
+              onUploadFile={onUploadFile}
               onSave={save}
               saving={saving()}
               name={name()}

@@ -4,6 +4,7 @@ import { browserUtils, type QRCodeStyling } from '@liquid-js/qr-code-styling';
 
 import type { Draft, QRKind } from '../lib/qr/record';
 import { contentToValue } from '../lib/qr/content';
+import type { UploadedFile } from '../lib/atproto/records';
 import { QRPreview } from './QRPreview';
 import { ContentFields } from './ContentFields';
 import { StyleControls } from './StyleControls';
@@ -20,6 +21,7 @@ interface Props {
   qrData?: string;
   emptyHint?: string;
   loginHref?: string;
+  onUploadFile?: (file: File) => Promise<UploadedFile>;
   onQRReady?: (qr: QRCodeStyling) => void;
   onSave?: () => Promise<void> | void;
   saving?: boolean;
@@ -117,6 +119,8 @@ export function Studio(props: Props) {
             <ContentFields
               content={props.draft.content}
               disabled={props.contentLocked}
+              onUploadFile={props.onUploadFile}
+              loginHref={props.loginHref}
               onChange={(content) => props.onChange({ ...props.draft, content })}
             />
 

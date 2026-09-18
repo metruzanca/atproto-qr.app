@@ -1,6 +1,8 @@
-import { Show } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
+import { A } from '@solidjs/router';
 
-import { emptyContent, type Content, type ContentType } from '../lib/qr/content';
+import { emptyContent, type BlobRef, type Content, type ContentType } from '../lib/qr/content';
+import type { UploadedFile } from '../lib/atproto/records';
 import { Field, Segmented, Select, TextInput, Textarea, Toggle } from './ui';
 
 type FieldMap = Record<string, unknown>;
@@ -301,10 +303,130 @@ function cryptoField(getFields: () => FieldMap, setFields: (patch: FieldMap) => 
   );
 }
 
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
+
+function formatSize(size: number): string {
+  if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  if (size >= 1024) return `${Math.round(size / 1024)} KB`;
+  return `${size} B`;
+}
+
+function FileField(props: {
+  fields: FieldMap;
+  disabled?: boolean;
+  onUploadFile?: (file: File) => Promise<UploadedFile>;
+  loginHref?: string;
+  onChange: (patch: Record<string, unknown>) => void;
+}) {
+  const [uploading, setUploading] = createSignal(false);
+  const [error, setError] = createSignal('');
+  const hasFile = Boolean(props.fields.blob as BlobRef | null | undefined);
+
+  const handleFile = async (file: File) => {
+    if (file.size > MAX_FILE_SIZE) {
+      setError('File must be 25 MB or smaller.');
+      return;
+    }
+    if (!props.onUploadFile) {
+      setError('Sign in to upload a file.');
+      return;
+    }
+    setUploading(true);
+    setError('');
+    try {
+      const uploaded = await props.onUploadFile(file);
+      props.onChange({
+        name: uploaded.name,
+        mimeType: uploaded.mimeType,
+        size: uploaded.size,
+        blob: uploaded.blob,
+      });
+    } catch {
+      setError('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Field label="File" hint="One file, up to 25 MB.">
+      <Show when={!props.onUploadFile}>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          <A href={props.loginHref ?? '/login'} class="font-semibold text-sky-600 hover:underline">
+            Sign in
+          </A>{' '}
+          to upload a file to your personal data server.
+        </div>
+      </Show>
+
+      <Show when={props.onUploadFile}>
+        <Show
+          when={hasFile}
+          fallback={
+            <input
+              type="file"
+              disabled={props.disabled || uploading()}
+              onChange={(e) => {
+                const file = e.currentTarget.files?.[0];
+                e.currentTarget.value = '';
+                if (file) void handleFile(file);
+              }}
+              class="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800 disabled:opacity-60"
+            />
+          }
+        >
+          <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <p class="truncate text-sm font-semibold text-slate-900">{String(props.fields.name ?? '')}</p>
+            <p class="mt-0.5 text-xs text-slate-500">
+              {formatSize(Number(props.fields.size ?? 0))} · {String(props.fields.mimeType ?? '')}
+            </p>
+            <div class="mt-3 flex gap-2">
+              <label
+                class={`cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 ${
+                  props.disabled ? 'pointer-events-none opacity-60' : ''
+                }`}
+              >
+                Replace
+                <input
+                  type="file"
+                  class="hidden"
+                  disabled={props.disabled || uploading()}
+                  onChange={(e) => {
+                    const file = e.currentTarget.files?.[0];
+                    e.currentTarget.value = '';
+                    if (file) void handleFile(file);
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                disabled={props.disabled || uploading()}
+                onClick={() => props.onChange({ name: '', mimeType: '', size: 0, blob: null })}
+                class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:opacity-60"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </Show>
+      </Show>
+
+      <Show when={uploading()}>
+        <p class="mt-1 text-xs text-slate-500">Uploading…</p>
+      </Show>
+      <Show when={error()}>
+        <p class="mt-1 text-xs text-red-600">{error()}</p>
+      </Show>
+    </Field>
+  );
+}
+
 export function ContentFields(props: {
   content: Content;
   onChange: (content: Content) => void;
   disabled?: boolean;
+  onUploadFile?: (file: File) => Promise<UploadedFile>;
+  loginHref?: string;
 }) {
   const getFields = () => props.content.fields;
   const setFields = (patch: FieldMap) =>
@@ -331,6 +453,7 @@ export function ContentFields(props: {
             { value: 'geo', label: 'Geo' },
             { value: 'event', label: 'Event' },
             { value: 'crypto', label: 'Crypto' },
+            { value: 'file', label: 'File' },
           ]}
         />
       </Field>
@@ -345,6 +468,15 @@ export function ContentFields(props: {
       <Show when={props.content.type === 'geo'}>{geoField(getFields, setFields, props.disabled)}</Show>
       <Show when={props.content.type === 'event'}>{eventField(getFields, setFields, props.disabled)}</Show>
       <Show when={props.content.type === 'crypto'}>{cryptoField(getFields, setFields, props.disabled)}</Show>
+      <Show when={props.content.type === 'file'}>
+        <FileField
+          fields={getFields()}
+          disabled={props.disabled}
+          onUploadFile={props.onUploadFile}
+          loginHref={props.loginHref}
+          onChange={setFields}
+        />
+      </Show>
     </div>
   );
 }

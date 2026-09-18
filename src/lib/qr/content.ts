@@ -8,11 +8,24 @@ export type ContentType =
   | 'vcard'
   | 'geo'
   | 'event'
-  | 'crypto';
+  | 'crypto'
+  | 'file';
 
 export interface Content {
   type: ContentType;
   fields: Record<string, unknown>;
+}
+
+export interface BlobRef {
+  $type: 'blob';
+  ref: { $link: string };
+  mimeType: string;
+  size: number;
+}
+
+export interface ContentContext {
+  pdsUrl?: string;
+  did?: string;
 }
 
 export const CONTENT_TYPES: { type: ContentType; label: string }[] = [
@@ -26,6 +39,7 @@ export const CONTENT_TYPES: { type: ContentType; label: string }[] = [
   { type: 'geo', label: 'Geo' },
   { type: 'event', label: 'Event' },
   { type: 'crypto', label: 'Crypto' },
+  { type: 'file', label: 'File' },
 ];
 
 export function defaultFields(type: ContentType): Record<string, unknown> {
@@ -50,6 +64,8 @@ export function defaultFields(type: ContentType): Record<string, unknown> {
       return { title: '', location: '', description: '', start: '', end: '' };
     case 'crypto':
       return { currency: 'bitcoin', address: '', amount: '' };
+    case 'file':
+      return { name: '', mimeType: '', size: 0, blob: null };
   }
 }
 
@@ -76,7 +92,7 @@ const CRYPTO_PREFIXES: Record<string, string> = {
   bitcoincash: 'bitcoincash',
 };
 
-export function contentToValue(content: Content): string {
+export function contentToValue(content: Content, ctx?: ContentContext): string {
   const f = content.fields;
 
   switch (content.type) {
@@ -88,6 +104,12 @@ export function contentToValue(content: Content): string {
     }
     case 'text':
       return String(f.text ?? '');
+    case 'file': {
+      const blob = f.blob as BlobRef | null | undefined;
+      if (!blob?.ref?.$link || !ctx?.pdsUrl || !ctx?.did) return '';
+      const pds = ctx.pdsUrl.replace(/\/+$/, '');
+      return `${pds}/xrpc/com.atproto.sync.getBlob?did=${ctx.did}&cid=${blob.ref.$link}`;
+    }
     case 'email': {
       const address = String(f.address ?? '').trim();
       const params = new URLSearchParams();
@@ -182,5 +204,7 @@ export function contentTitle(content: Content): string {
       return `Event: ${String(f.title ?? '').trim() || '…'}`;
     case 'crypto':
       return `${String(f.currency ?? 'crypto')}: ${String(f.address ?? '').trim().slice(0, 20) || '…'}`;
+    case 'file':
+      return String(f.name ?? '').trim() || 'File';
   }
 }
