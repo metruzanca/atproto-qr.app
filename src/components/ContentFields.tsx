@@ -303,7 +303,7 @@ function cryptoField(getFields: () => FieldMap, setFields: (patch: FieldMap) => 
   );
 }
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 function formatSize(size: number): string {
   if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
@@ -324,7 +324,7 @@ function FileField(props: {
 
   const handleFile = async (file: File) => {
     if (file.size > MAX_FILE_SIZE) {
-      setError('File must be 25 MB or smaller.');
+      setError('File must be 5 MB or smaller.');
       return;
     }
     if (!props.onUploadFile) {
@@ -349,7 +349,7 @@ function FileField(props: {
   };
 
   return (
-    <Field label="File" hint="One file, up to 25 MB.">
+    <Field label="File" hint="One file, up to 5 MB.">
       <Show when={!props.onUploadFile}>
         <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
           <A href={props.loginHref ?? '/login'} class="font-semibold text-sky-600 hover:underline">

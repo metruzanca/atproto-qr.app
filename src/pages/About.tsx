@@ -55,7 +55,9 @@ export default function About() {
               files that run on your device, so nothing you type or design is uploaded, encoded by a remote service, or
               stored along the way. The finished image is produced on your computer and only leaves it if you download
               or share it yourself. That's also why there's nothing here to log, mine, or sell — no server of ours
-              exists.
+              exists. The one exception is optional: if you add a logo from a website that blocks your browser from
+              drawing it into a QR preview, you'll be asked whether to fetch that image through a third-party image
+              proxy — it's your choice, and only that image.
             </p>
           </Disclosure>
           <Disclosure summary={'Then why is there a "sign in" button?'}>
@@ -227,7 +229,7 @@ export default function About() {
           <Disclosure summary="Can I put a file in a QR code?">
             <p>
               Yes — the <span class="font-semibold text-slate-700 dark:text-slate-200">file</span> content type lets you attach a single
-              file (up to 25 MB). The file is uploaded as an atproto blob to your own PDS, and the QR encodes a link
+              file (up to 5 MB). The file is uploaded as an atproto blob to your own PDS, and the QR encodes a link
               straight to that blob, so scanning it downloads the file. As with everything here, the bytes live on
               your server — this site never touches them.
             </p>
@@ -253,7 +255,7 @@ export default function About() {
               one, so anything already printed keeps scanning to the right place. The redirect record carries a visible
               note — "DO NOT DELETE — this record keeps previously printed QR codes working" — for anyone poking around
               their PDS in tools like pdsls. Each code's latest record also keeps a list of every name it has ever had.
-              When you delete a code, all of those old redirect records are deleted too, in a single atomic write.
+              When you delete a code, all of those old redirect records are deleted too.
             </p>
           </Disclosure>
         </div>

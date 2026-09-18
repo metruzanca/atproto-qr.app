@@ -146,7 +146,7 @@ export function contentToValue(content: Content, ctx?: ContentContext): string {
     case 'geo':
       return `geo:${String(f.lat ?? '')},${String(f.lon ?? '')}`;
     case 'event': {
-      const lines = ['BEGIN:VEVENT'];
+      const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//atproto-qr.app//QR Event//EN', 'BEGIN:VEVENT'];
       if (f.title) lines.push(`SUMMARY:${f.title}`);
       if (f.location) lines.push(`LOCATION:${f.location}`);
       if (f.description) lines.push(`DESCRIPTION:${String(f.description).replace(/\n/g, '\\n')}`);
@@ -154,7 +154,7 @@ export function contentToValue(content: Content, ctx?: ContentContext): string {
       const end = toIcal(String(f.end ?? ''));
       if (start) lines.push(`DTSTART:${start}`);
       if (end) lines.push(`DTEND:${end}`);
-      lines.push('END:VEVENT');
+      lines.push('END:VEVENT', 'END:VCALENDAR');
       return lines.join('\n');
     }
     case 'crypto': {

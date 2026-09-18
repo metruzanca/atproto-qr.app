@@ -117,7 +117,7 @@ const EXAMPLES: ExampleCard[] = [
       </svg>
     ),
     title: 'Straight into a calendar',
-    desc: 'Workshops, classes, meetups, appointments. The scan drops the event into the phone’s calendar with all the details.',
+    desc: 'Workshops, classes, meetups, appointments. The scan opens the event in the phone’s calendar app with all the details.',
     tip: 'Set a start and end time so the invite lands correctly.',
   },
   {

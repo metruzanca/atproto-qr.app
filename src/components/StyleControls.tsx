@@ -1,4 +1,4 @@
-import { Show } from 'solid-js';
+import { createEffect, createSignal, onCleanup, Show } from 'solid-js';
 import { DotType, CornerDotType, CornerSquareType, ShapeType } from '@liquid-js/qr-code-styling';
 
 import { ERROR_CORRECTION_LEVELS, type QRStyle } from '../lib/qr/style';
@@ -11,6 +11,30 @@ const CORNER_DOT_OPTIONS = Object.values(CornerDotType).map((v) => ({ value: v, 
 export function StyleControls(props: { style: QRStyle; onChange: (style: QRStyle) => void }) {
   const s = () => props.style;
   const set = (patch: Partial<QRStyle>) => props.onChange({ ...props.style, ...patch });
+  const [needsProxy, setNeedsProxy] = createSignal(false);
+
+  createEffect(() => {
+    const url = s().image;
+    const proxied = s().imageProxy;
+    if (proxied || !url || /^(data|blob):/i.test(url) || !/^https?:\/\//i.test(url)) {
+      setNeedsProxy(false);
+      return;
+    }
+    const current = url;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        await fetch(current, { mode: 'cors' });
+        if (!cancelled) setNeedsProxy(false);
+      } catch {
+        if (!cancelled) setNeedsProxy(true);
+      }
+    }, 400);
+    onCleanup(() => {
+      cancelled = true;
+      clearTimeout(timer);
+    });
+  });
 
   return (
     <div class="space-y-4">
@@ -131,13 +155,43 @@ export function StyleControls(props: { style: QRStyle; onChange: (style: QRStyle
           <Show when={s().image}>
             <button
               type="button"
-              onClick={() => set({ image: null })}
+              onClick={() => set({ image: null, imageProxy: false })}
               class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
             >
               Remove
             </button>
           </Show>
         </div>
+      <Show when={needsProxy()}>
+        <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <p>
+            This image host blocks direct loading into a QR canvas. Route it through a third-party image proxy so it
+            renders (and so downloads still work)?
+          </p>
+          <button
+            type="button"
+            onClick={() => set({ imageProxy: true })}
+            class="mt-2 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-700"
+          >
+            Use image proxy
+          </button>
+        </div>
+      </Show>
+      <Show when={s().imageProxy && s().image}>
+        <div class="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <p>
+            Logo rendered via <span class="font-mono">images.weserv.nl</span>, a third party. Self-host your own proxy
+            with <span class="font-mono">VITE_IMAGE_PROXY</span>.
+          </p>
+          <button
+            type="button"
+            onClick={() => set({ imageProxy: false })}
+            class="mt-2 text-xs font-semibold text-sky-600 hover:underline dark:text-sky-400"
+          >
+            Remove proxy
+          </button>
+        </div>
+      </Show>
         <div class="grid grid-cols-2 gap-3">
           <Field label="Image margin">
             <TextInput

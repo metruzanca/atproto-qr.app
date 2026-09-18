@@ -15,6 +15,7 @@ export interface QRStyle {
   imageMargin: number;
   imageSize: number;
   errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H';
+  imageProxy?: boolean;
 }
 
 export const DEFAULT_STYLE: QRStyle = {
@@ -32,6 +33,7 @@ export const DEFAULT_STYLE: QRStyle = {
   imageMargin: 0,
   imageSize: 40,
   errorCorrectionLevel: 'H',
+  imageProxy: false,
 };
 
 export const ERROR_CORRECTION_LEVELS: ('L' | 'M' | 'Q' | 'H')[] = ['L', 'M', 'Q', 'H'];
@@ -78,7 +80,11 @@ export function styleToOptions(style: QRStyle, data: string): RecursivePartial<O
         }
       : undefined,
     backgroundOptions: { color: style.backgroundColor, margin: style.backgroundMargin },
-    image: proxyImageUrl(style.image) ?? undefined,
+    image: style.image
+      ? style.imageProxy
+        ? (proxyImageUrl(style.image) ?? undefined)
+        : style.image
+      : undefined,
     imageOptions: {
       margin: style.imageMargin,
       imageSize: style.imageSize > 1 ? style.imageSize / 100 : style.imageSize,

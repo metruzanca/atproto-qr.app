@@ -12,7 +12,7 @@ A beautiful QR code generator with **atproto-backed editable codes**. Pure front
 
 **Dynamic codes** — the QR encodes a link back to the app (`https://atproto-qr.app/{handle}/{name}`, snapshotted into the record at save time). Scan it, land on the code's page, which reads the current record from your PDS and renders the latest data. Change the data anytime — the printed QR never changes.
 
-Both modes share the same studio: 11 content types (URL, text, email, phone, SMS, WiFi, vCard, geo, event, crypto, **file**), full styling (colors, shapes, dot styles, embedded image, error-correction level), live preview, and PNG/SVG download. The **file** type uploads a single file (up to 25 MB) as an atproto blob on your PDS; its QR encodes the blob URL (`{pds}/xrpc/com.atproto.sync.getBlob?did={did}&cid={cid}`, recomputed at render), so scanning redirects to the file.
+Both modes share the same studio: 11 content types (URL, text, email, phone, SMS, WiFi, vCard, geo, event, crypto, **file**), full styling (colors, shapes, dot styles, embedded image, error-correction level), live preview, and PNG/SVG download. The **file** type uploads a single file (up to 5 MB, the atproto PDS default limit) as an atproto blob on your PDS; its QR encodes the blob URL (`{pds}/xrpc/com.atproto.sync.getBlob?did={did}&cid={cid}`, recomputed at render), so scanning redirects to the file.
 
 ---
 
@@ -71,7 +71,7 @@ This also lets self-hosted copies pick up their own domain.
 {
   $type: 'app.atproto-qr.qr';
   kind: 'fixed' | 'dynamic';
-  content: { type: ContentType; fields: Record<string, unknown> }; // 10 content types
+  content: { type: ContentType; fields: Record<string, unknown> }; // 11 content types
   style: QRStyle;                                                  // serializable style options
   qrValue?: string;        // dynamic only: the exact app URL the QR encodes
   createdAt: string;
@@ -107,7 +107,7 @@ src/
 ```
 
 - `src/lib/qr/record.ts` — `QRRecord`/`Draft` types, `makeRecord`, `isValidRecord`, `qrValueFor` (effective QR payload), and `draftToParams`/`draftFromParams` (fixed-mode URL persistence).
-- `src/lib/qr/content.ts` — `contentToValue` serializers for all 10 content types, `codeUrl(handle, name)`.
+- `src/lib/qr/content.ts` — `contentToValue` serializers for all 11 content types, `codeUrl(handle, name)`.
 - `src/lib/qr/style.ts` — serializable `QRStyle` ↔ qr-code-styling options.
 - `src/components/Studio.tsx` — the shared generator: kind selector, content + style + preview + download, optional name/save block, and the fixed-code data lock.
 - `src/lib/qr/name.ts` — slug validation and `{adjective}-{animal}` name generation.
@@ -138,15 +138,26 @@ so the generated OAuth metadata and redirect URI match the deployed origin. The 
 
 To embed a logo, the QR renderer fetches the image cross-origin and draws it
 into a canvas, which requires the host to send CORS headers. Hosts that
-don't (e.g. `zanca.dev/icon.png`) get blocked by the browser. The app routes
-external image URLs through a CORS proxy (`proxyImageUrl` in
-`src/lib/qr/style.ts`):
+don't (e.g. `zanca.dev/icon.png`) get blocked by the browser, so the logo
+simply won't render.
 
-- By default it falls back to the free public proxy
-  `images.weserv.nl` (`Access-Control-Allow-Origin: *`), so logos work out of
-  the box — but that means external image URLs go through a third party.
+By default the app tries the image **directly, with no proxy** — nothing goes
+through a third party. When the browser blocks a cross-origin logo, the studio
+detects it and offers to route that one image through a CORS proxy. If you
+accept, `imageProxy` is stored in the code's record so the logo keeps rendering
+for everyone who opens the saved code's page (`proxyImageUrl` in
+`src/lib/qr/style.ts`).
+
+- The default proxy is the free public `images.weserv.nl`
+  (`Access-Control-Allow-Origin: *`), which means the logo URL goes through a
+  third party — but only for codes you've opted in on.
 - Self-host your own by setting the build-time variable
   `VITE_IMAGE_PROXY` to your proxy's origin (e.g. `https://cors-proxy.example.com`).
+- `data:`/`blob:` logo URLs (the in-app upload path) never use a proxy.
+
+Legacy note: codes saved before this change assumed the proxy. Those records
+have no `imageProxy` flag, so they now load the image directly; the owner can
+re-enable the proxy from the editor if a logo stops rendering.
 
 A portable, zero-dependency proxy lives in [`proxy/`](proxy/README.md)
 (single Node ≥ 18 file + Dockerfile, runs anywhere). Lock it down with
