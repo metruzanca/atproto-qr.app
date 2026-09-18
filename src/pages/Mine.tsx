@@ -184,12 +184,18 @@ function renderQR(
       : payload;
   return (
     <li class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-      <div class="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50">
+      <A
+        href={`${url}/edit`}
+        title="Edit"
+        class="block h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-50 transition hover:opacity-80"
+      >
         <RecordThumb payload={payload} style={entry.record.style} />
-      </div>
+      </A>
       <div class="min-w-0 flex-1">
-        <p class="flex items-center gap-2 truncate text-sm font-semibold text-slate-900">
-          <span class="truncate">{entry.rkey}</span>
+        <p class="flex items-center gap-2 text-sm font-semibold text-slate-900">
+          <A href={`${url}/edit`} class="truncate transition hover:text-sky-600 hover:underline">
+            {entry.rkey}
+          </A>
           <span
             class={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
               kind === 'dynamic' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'
