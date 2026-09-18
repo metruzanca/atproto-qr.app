@@ -8,6 +8,7 @@ import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { DEFAULT_STYLE } from '../lib/qr/style';
 import { draftFromParams, draftToParams, makeRecord, type Draft, type QRKind } from '../lib/qr/record';
 import { Studio } from '../components/Studio';
+import { UsageGuide } from '../components/UsageGuide';
 
 function readDraftFromUrl(): Draft | null {
   const params = new URLSearchParams(location.search);
@@ -113,7 +114,7 @@ export default function Home() {
         setNameError(err.message);
       } else {
         console.error(err);
-        setSaveError('Could not save to your PDS. Please try again.');
+        setSaveError('Could not save to your account. Please try again.');
       }
     } finally {
       setSaving(false);
@@ -129,7 +130,7 @@ export default function Home() {
         <p class="mx-auto mt-3 max-w-2xl text-slate-600">
           Style a QR code in seconds, download it anywhere — or sign in to save it as a{' '}
           <span class="font-semibold text-slate-800">fixed</span> or{' '}
-          <span class="font-semibold text-slate-800">dynamic</span> code that lives in your own personal data server.
+          <span class="font-semibold text-slate-800">dynamic</span> code that lives on your own Bluesky account.
         </p>
       </section>
 
@@ -159,6 +160,8 @@ export default function Home() {
         onGenerateName={generateName}
         nameError={nameError()}
       />
+
+      <UsageGuide />
     </main>
   );
 }

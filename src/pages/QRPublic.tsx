@@ -111,7 +111,7 @@ export default function QRPublic() {
         <div class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
           <h1 class="text-xl font-bold text-slate-900">QR code not found</h1>
           <p class="mt-2 text-sm text-slate-600">
-            We couldn't find this code on the owner's personal data server. It may have been deleted.
+            We couldn't find this code on the owner's Bluesky account. It may have been deleted.
           </p>
         </div>
       </Show>

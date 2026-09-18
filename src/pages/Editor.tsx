@@ -228,7 +228,7 @@ export default function Editor() {
       }
       return;
     }
-    if (!confirm('Delete this QR code? This removes the record and all of its redirect records from your PDS, breaking every printed URL for it.')) return;
+    if (!confirm('Delete this QR code? This removes the code and all of its old links from your Bluesky account, breaking every printed URL for it.')) return;
     try {
       await cascadeDeleteQRRecord(authedClient(a), p.did, params.id, existing()?.aliases ?? []);
       navigate('/codes');

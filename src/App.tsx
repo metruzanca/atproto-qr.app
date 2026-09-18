@@ -21,8 +21,7 @@ function Root(props: { children?: JSX.Element }) {
       <footer class="border-t border-slate-200 bg-white">
         <div class="mx-auto max-w-6xl space-y-2 px-4 py-6 text-center text-xs text-slate-500">
           <p>
-            Your QR codes are stored as records in your own atproto personal data server (PDS). We can't edit, hide, or
-            delete them.
+            Your QR codes are stored on your own Bluesky account — we can't edit, hide, or delete them.
           </p>
           <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <span>

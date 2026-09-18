@@ -355,7 +355,7 @@ function FileField(props: {
           <A href={props.loginHref ?? '/login'} class="font-semibold text-sky-600 hover:underline">
             Sign in
           </A>{' '}
-          to upload a file to your personal data server.
+          to upload a file to your Bluesky account.
         </div>
       </Show>
 

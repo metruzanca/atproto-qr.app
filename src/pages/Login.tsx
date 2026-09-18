@@ -110,7 +110,7 @@ export default function Login() {
             <p class="mt-2 text-sm text-slate-600">
               Enter your handle (e.g. <span class="font-mono">alice.bsky.social</span>). You'll be redirected to your
               provider to authorize this app. Your QR codes are stored as records in{' '}
-              <span class="font-semibold">your</span> personal data server — not on our servers.
+              <span class="font-semibold">your</span> Bluesky account — not on our servers.
             </p>
             <form class="mt-6 space-y-4" onSubmit={submit}>
               <Field label="Handle">

@@ -89,7 +89,7 @@ export default function Mine() {
   const remove = async (rkey: string, aliases: string[] | undefined) => {
     const a = agent();
     if (!a) return;
-    if (!confirm('Delete this QR code? This removes the record and all of its redirect records from your PDS, breaking every printed URL for it.')) return;
+    if (!confirm('Delete this QR code? This removes the code and all of its old links from your Bluesky account, breaking every printed URL for it.')) return;
     try {
       await cascadeDeleteQRRecord(authedClient(a), a.sub, rkey, aliases ?? []);
       setItems(items().filter((i) => i.rkey !== rkey));
