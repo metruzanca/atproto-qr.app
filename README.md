@@ -159,4 +159,4 @@ This site has no backend: no database, no accounts, no logs, no analytics. The o
 
 ## License
 
-MIT
+[MIT](LICENSE)

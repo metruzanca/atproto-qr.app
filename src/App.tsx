@@ -19,9 +19,45 @@ function Root(props: { children?: JSX.Element }) {
       <div class="flex-1">{props.children}</div>
       <ToastContainer />
       <footer class="border-t border-slate-200 bg-white">
-        <div class="mx-auto max-w-6xl px-4 py-6 text-center text-xs text-slate-500">
-          Your QR codes are stored as records in your own atproto personal data server (PDS). We can't edit, hide, or
-          delete them.
+        <div class="mx-auto max-w-6xl space-y-2 px-4 py-6 text-center text-xs text-slate-500">
+          <p>
+            Your QR codes are stored as records in your own atproto personal data server (PDS). We can't edit, hide, or
+            delete them.
+          </p>
+          <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <span>
+              Open source · MIT licensed ·{' '}
+              <a
+                href="https://github.com/metruzanca/atproto-qr.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-sky-600 hover:underline"
+              >
+                GitHub
+              </a>
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>
+              Created by{' '}
+              <a
+                href="https://bsky.app/metru.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-sky-600 hover:underline"
+              >
+                Sam Zanca
+              </a>{' '}
+              ·{' '}
+              <a
+                href="https://zanca.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-sky-600 hover:underline"
+              >
+                zanca.dev
+              </a>
+            </span>
+          </p>
         </div>
       </footer>
     </div>
