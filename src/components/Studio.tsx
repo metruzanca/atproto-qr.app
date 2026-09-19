@@ -236,7 +236,7 @@ export function Studio(props: Props) {
               Analytics
             </h2>
             <p class="mb-4 text-xs text-slate-500 dark:text-slate-400">
-              Counts visits to this code's page — every scan lands here. Your own visits are excluded.
+              Counts every visit to this code's page — every scan lands here.
             </p>
 
             <div class="space-y-2.5">

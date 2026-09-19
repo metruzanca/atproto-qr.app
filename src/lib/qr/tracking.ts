@@ -245,16 +245,27 @@ async function firePlausible(config: Extract<TrackingConfig, { provider: 'plausi
 
 async function fireUmami(config: Extract<TrackingConfig, { provider: 'umami' }>, ctx: TrackingContext): Promise<void> {
   const endpoint = config.endpoint.replace(/\/$/, '');
+  let path = ctx.url;
+  try {
+    const u = new URL(ctx.url);
+    path = u.pathname + u.search;
+  } catch {
+    // keep the raw url
+  }
   await fetch(`${endpoint}/api/send`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      website: config.websiteId,
-      hostname: window.location.hostname,
-      language: navigator.language,
-      referrer: ctx.referrer,
-      title: ctx.title,
-      url: ctx.url,
+      payload: {
+        website: config.websiteId,
+        hostname: window.location.hostname,
+        language: navigator.language,
+        referrer: ctx.referrer,
+        screen: `${window.screen.width}x${window.screen.height}`,
+        title: ctx.title,
+        url: path,
+      },
+      type: 'event',
     }),
     keepalive: true,
   }).catch(() => {});

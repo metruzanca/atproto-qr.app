@@ -72,7 +72,7 @@ export default function QRPublic() {
       const ctx = { pdsUrl: actor.pds, did: actor.did };
 
       const trk = (item.record.kind ?? 'fixed') === 'dynamic' ? item.record.tracking : undefined;
-      if (trk && !isOwner()) {
+      if (trk) {
         let cfg: TrackingConfig | undefined;
         if (trk.source === 'custom') {
           cfg = trk.config;
