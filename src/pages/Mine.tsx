@@ -203,9 +203,20 @@ function renderQR(
           >
             {kind}
           </span>
+          {entry.record.tracking && (
+            <span
+              class={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                entry.record.tracking.source === 'global'
+                  ? 'bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300'
+                  : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'
+              }`}
+            >
+              {entry.record.tracking.source === 'global' ? 'Global tracking' : 'Custom tracking'}
+            </span>
+          )}
         </p>
         <p class="truncate text-xs text-slate-500 dark:text-slate-400">
-          {entry.record.content.type} · {subtitle || '—'} · {entry.record.updatedAt.slice(0, 10)}
+          {entry.record.content.type} · {subtitle || '—'} · Updated {entry.record.updatedAt.slice(0, 10)}
         </p>
       </div>
       <div class="flex shrink-0 items-center gap-1">
