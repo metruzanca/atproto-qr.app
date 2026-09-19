@@ -368,20 +368,6 @@ export function Studio(props: Props) {
               </Show>
             </div>
           </Show>
-
-          <Show when={props.savedUrl}>
-            <p class="mt-3 break-all text-xs text-slate-500 dark:text-slate-400">
-              <span class="font-semibold text-slate-700 dark:text-slate-200">Public URL:</span>{' '}
-              <a
-                href={props.savedUrl ?? undefined}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-sky-600 hover:underline"
-              >
-                {props.savedUrl}
-              </a>
-            </p>
-          </Show>
         </div>
       </div>
 
