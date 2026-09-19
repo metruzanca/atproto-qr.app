@@ -260,6 +260,20 @@ export default function About() {
           </Disclosure>
         </div>
       </section>
+
+      <section class="mt-12 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Technical reference</h2>
+        <p class="mx-auto mt-1 max-w-xl text-sm text-slate-600 dark:text-slate-300">
+          Every record this app reads and writes is defined by an atproto lexicon. Read the exact shapes — the three
+          lexicons this app defines and the standard atproto and Bluesky ones it calls.
+        </p>
+        <A
+          href="/lexicons"
+          class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
+        >
+          View the lexicons
+        </A>
+      </section>
     </main>
   );
 }
