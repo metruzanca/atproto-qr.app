@@ -5,7 +5,6 @@ services:
       dockerfile: selfhost/Dockerfile
       args:
         VITE_PUBLIC_ORIGIN: ${VITE_PUBLIC_ORIGIN:?set VITE_PUBLIC_ORIGIN in selfhost/.env}
-        VITE_IMAGE_PROXY: ${VITE_IMAGE_PROXY:-}
     ports:
       - '${PORT:-8080}:80'
     restart: unless-stopped

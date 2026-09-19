@@ -47,12 +47,11 @@ into.
 | Env var              | Required | Description                                                                                                             |
 | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `VITE_PUBLIC_ORIGIN` | yes      | Public origin of this instance (no trailing slash). Baked in at build time; drives the OAuth client metadata + redirect URI. |
-| `VITE_IMAGE_PROXY`   | no       | Origin of a self-hosted CORS image proxy for logo images (see [proxy/](../proxy/README.md)).                              |
 | `PORT`               | no       | Host port to publish Caddy on (default `8080`).                                                                           |
 | `DOMAIN`             | no       | Your domain, e.g. `qrs.example.com`, to let Caddy manage TLS automatically. Unset = plain HTTP on port 80.                |
 
-`VITE_PUBLIC_ORIGIN` and `VITE_IMAGE_PROXY` are **build-time** values, so
-changing them requires a rebuild (`docker compose up -d --build`).
+`VITE_PUBLIC_ORIGIN` is a **build-time** value, so changing it requires a
+rebuild (`docker compose up -d --build`).
 
 ## How it works
 
@@ -79,11 +78,12 @@ changing them requires a rebuild (`docker compose up -d --build`).
 ## Optional CORS image proxy
 
 To embed a logo, the app draws it into a canvas, which needs the image host to
-send CORS headers. Hosts that don't can be routed through a proxy. The repo
-ships a zero-dependency proxy in [`proxy/`](../proxy/README.md). Self-host it,
-then set `VITE_IMAGE_PROXY=https://cors-proxy.example.com` and rebuild. Without
-it, the app falls back to the public `images.weserv.nl` proxy (per code, opt-in
-only).
+send CORS headers. Hosts that don't can be routed through a proxy. By default
+the app uses the free public `images.weserv.nl` (per code, opt-in only). To
+self-host or use another provider, point the app at any off-the-shelf CORS
+proxy by setting it as the global default under **Settings → Image proxy** in
+the app — e.g. `corsproxy.io`. It just needs to accept `GET ?url=<encoded>`
+and return CORS headers.
 
 ## Manual build without compose
 

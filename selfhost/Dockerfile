@@ -17,12 +17,9 @@ COPY src/ src/
 COPY public/ public/
 
 # VITE_PUBLIC_ORIGIN is required: it bakes the OAuth client metadata and
-# redirect URI into the build (see vite.config.ts). VITE_IMAGE_PROXY is
-# optional and only used when you self-host the CORS image proxy.
+# redirect URI into the build (see vite.config.ts).
 ARG VITE_PUBLIC_ORIGIN=
-ARG VITE_IMAGE_PROXY=
-ENV VITE_PUBLIC_ORIGIN=$VITE_PUBLIC_ORIGIN \
-    VITE_IMAGE_PROXY=$VITE_IMAGE_PROXY
+ENV VITE_PUBLIC_ORIGIN=$VITE_PUBLIC_ORIGIN
 
 RUN pnpm build
 

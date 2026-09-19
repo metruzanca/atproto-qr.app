@@ -2,169 +2,76 @@
 
 A beautiful QR code generator with **atproto-backed editable codes**. Pure frontend SPA — no backend, no database, no accounts of our own. Your codes live as records in your own Bluesky personal data server (PDS).
 
-[Live app](https://atproto-qr.app) · [About / privacy explainer](https://atproto-qr.app/about)
+[Live app](https://atproto-qr.app)
 
 ---
 
-## What it does
+<!--## Screenshots-->
 
-**Fixed codes** — the QR encodes your real data directly, like any QR generator. Sign in to store a copy in your PDS for convenience. The data is locked in the editor afterwards (changing it re-encodes, producing a new image — that's gated behind a confirmation); you can restyle the appearance freely.
+<!-- Drop screenshots into screenshots/ and reference them here. -->
 
-**Dynamic codes** — the QR encodes a link back to the app (`https://atproto-qr.app/{handle}/{name}`, snapshotted into the record at save time). Scan it, land on the code's page, which reads the current record from your PDS and renders the latest data. Change the data anytime — the printed QR never changes.
+<!--![QR studio — design styled QR codes](screenshots/studio.png)
 
-Both modes share the same studio: 11 content types (URL, text, email, phone, SMS, WiFi, vCard, geo, event, crypto, **file**), full styling (colors, shapes, dot styles, embedded image, error-correction level), live preview, and PNG/SVG download. The **file** type uploads a single file (up to 5 MB, the atproto PDS default limit) as an atproto blob on your PDS; its QR encodes the blob URL (`{pds}/xrpc/com.atproto.sync.getBlob?did={did}&cid={cid}`, recomputed at render), so scanning redirects to the file.
+![Your saved codes](screenshots/codes.png)
 
----
+![A code's public page](screenshots/public.png)
 
-## Why there is no server
+![The editor](screenshots/editor.png)-->
+
+## Features
+
+### QR Code Editor
+
+Design styled QR codes right in the browser, no sign-in needed. Eleven content types — URL, text, email, phone, SMS, WiFi, vCard, geo, event, crypto, and file — plus full styling: colors, shapes, dot styles, an embedded logo, and error-correction level. Live preview, PNG and SVG download.
+
+### Two ways to make a code
+
+**Fixed codes** — the simplest, and the default. The QR encodes your real data directly, like any QR generator. Saving just stores a copy in your PDS. The data is locked afterwards (changing it would re-encode, producing a new image), but you can restyle the appearance freely.
+
+**Dynamic codes** — the QR encodes a stable link to the code's page. Sign in with your Bluesky (or any atproto) account to save a code to your own PDS and get a public URL like `atproto-qr.app/{handle}/{name}`. The app never stores your data — your records live on your PDS. Scan the code and the page reads the current record, so you can change the content anytime — the printed QR never changes.
+
+> **File uploads** — dynamic codes can also point at a single file you upload (up to 5 MB), stored as a blob on your PDS. Scanning the QR opens the file.
+
+### Canonical links
+
+Every saved code gets a permanent URL. Rename a code and the old URL is persisted as a redirect, so printed QRs never break.
+
+### Optional analytics
+
+Dynamic codes can opt into client-side analytics (Google Analytics, Plausible, Umami, or Matomo). Everything fires from the visitor's browser; no third-party scripts ever run on the app itself.
+
+## How it works
 
 Every line of code runs in your browser. When you save a code, your browser writes a record straight to *your* PDS via atproto's OAuth + XRPC. When someone opens a code's URL, their browser fetches the record directly from your PDS and renders it — no middleman. The app hosts zero bytes of user data, so there's nothing to log, mine, or leak.
 
 ```
 ┌─────────────┐   OAuth 2.1 / XRPC    ┌───────────────────┐
-│   Browser   │ ◄────────────────────► │  User's PDS       │
-│  (this app) │   at://did/…/qr/*     │  (their own data) │
+│   Browser    │ ◄─────────────────► │    User's PDS       │
+│  (this app)  │   at://did/…/qr/*     │    (their own data) │
 └─────────────┘                       └───────────────────┘
       │  public reads via simpleFetchHandler
       └────────► every other visitor's browser
 ```
 
-## Tech stack
+Your saved codes are records in your PDS (`app.atproto-qr.qr`). When you rename a code, a small redirect record is left at the old name so previously printed URLs keep working.
 
-- [Vite](https://vitejs.dev) + [SolidJS](https://solidjs.com) 1.9 + [Tailwind CSS](https://tailwindcss.com) 4 + TypeScript (strict)
-- [@solidjs/router](https://github.com/solidjs/solid-router) 1.0 (data router)
-- atproto via [atcute](https://github.com/atcute/atcute):
-  - `@atcute/oauth-browser-client` — OAuth 2.1 (PKCE + DPoP + PAR, public client)
-  - `@atcute/client` — XRPC
-  - `@atcute/identity-resolver` — handle → DID → PDS
-  - `@atcute/atproto` / `@atcute/bluesky` / `@atcute/lexicons`
-- QR rendering: [`@liquid-js/qr-code-styling`](https://github.com/liquid-js/qr-code-styling) (maintained fork of `qr-code-styling`)
-- Package manager: [pnpm](https://pnpm.io) 11
+## Self-hosting
 
-## Getting started
+The app is fully static — `dist/` runs on any static host, and the repo ships a Docker + Caddy setup that mirrors the production serving (see [`selfhost/`](selfhost/README.md), kept in a subdirectory so Railway never mistakes it for a build file).
 
-```bash
-pnpm install
-pnpm dev        # vite dev server → http://127.0.0.1:3000
-pnpm build      # vite build → dist/
-pnpm preview    # preview the production build
-pnpm exec tsc --noEmit   # typecheck (no lint script)
-```
+### Environment variables
 
-Dev OAuth uses the loopback client, so vite must stay on `127.0.0.1:3000` (already pinned via `server.host` in `vite.config.ts`).
+| Env var               | Required | Description                                                                                                  |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
+| `VITE_PUBLIC_ORIGIN`  | yes      | Public origin of your instance (no trailing slash). Build-time; generates the OAuth client metadata + redirect URI, so it must match the URL people visit. |
+| `PORT`                | no       | Host port to publish Caddy on (default `8080`).                                                                |
+| `DOMAIN`              | no       | Your domain, e.g. `qrs.example.com`, to let Caddy manage TLS automatically. Unset = plain HTTP.                 |
 
-### OAuth / prod metadata
+`VITE_PUBLIC_ORIGIN` is baked in at build time, so changing it requires a rebuild.
 
-`CLIENT_ID` is handled automatically: dev uses the loopback client, prod uses a metadata URL derived from `VITE_PUBLIC_ORIGIN`. Prod metadata is **generated at build time** (`oauthMetadataPlugin` in `vite.config.ts` writes `dist/oauth-client-metadata.json`), so there is no committed metadata file.
+### CORS image proxy for logos
 
-```bash
-VITE_PUBLIC_ORIGIN=https://atproto-qr.app pnpm build
-```
-
-This also lets self-hosted copies pick up their own domain.
-
-## Data model (records in the user's PDS)
-
-### `app.atproto-qr.qr`
-
-```ts
-{
-  $type: 'app.atproto-qr.qr';
-  kind: 'fixed' | 'dynamic';
-  content: { type: ContentType; fields: Record<string, unknown> }; // 11 content types
-  style: QRStyle;                                                  // serializable style options
-  qrValue?: string;        // dynamic only: the exact app URL the QR encodes
-  createdAt: string;
-  updatedAt: string;
-  aliases?: string[];      // every previous name (oldest first), for cascade delete
-}
-```
-
-- **Dynamic** — the QR encodes `{origin}/{handle}/{name}`, snapshotted into `qrValue` at save/rename so the image never changes (stable across origin/handle changes). Content stays editable; the public page renders the record.
-- **Fixed** — the QR encodes the real data (`contentToValue`). The record is a stored copy; the editor locks the data form behind a padlock + confirm because re-encoding changes the image. Legacy records with no `kind` are treated as fixed.
-
-### `app.atproto-qr.redirect`
-
-Created at an old name when a code is renamed, so previously printed URLs keep working. Public pages follow redirect hops client-side.
-
-```ts
-{ $type: 'app.atproto-qr.redirect'; target: string; note: string; createdAt: string }
-```
-
-The `note` ("DO NOT DELETE — keeps printed QR codes working") is visible to anyone browsing the PDS.
-
-**Rename flow**: validate name uniqueness → `createRecord` at the new name with `aliases = [...old.aliases, oldRkey]` → `putRecord` a redirect at the old rkey → delete the old record. **Delete** cascades the record plus every alias redirect.
-
-## Project structure
-
-```
-src/
-├── components/          # Studio, ContentFields, StyleControls, QRPreview, ConfirmDialog, ui
-├── lib/
-│   ├── atproto/         # auth (OAuth), records (XRPC CRUD), resolve (handle→PDS)
-│   └── qr/              # content serializers, style mapping, record/draft model, name gen
-└── pages/               # Home, Editor, QRPublic, Mine, Login, Callback, About
-```
-
-- `src/lib/qr/record.ts` — `QRRecord`/`Draft` types, `makeRecord`, `isValidRecord`, `qrValueFor` (effective QR payload), and `draftToParams`/`draftFromParams` (fixed-mode URL persistence).
-- `src/lib/qr/content.ts` — `contentToValue` serializers for all 11 content types, `codeUrl(handle, name)`.
-- `src/lib/qr/style.ts` — serializable `QRStyle` ↔ qr-code-styling options.
-- `src/components/Studio.tsx` — the shared generator: kind selector, content + style + preview + download, optional name/save block, and the fixed-code data lock.
-- `src/lib/qr/name.ts` — slug validation and `{adjective}-{animal}` name generation.
-
-### Fixed-mode URL persistence
-
-While in Fixed mode, only **dirty** draft fields (content type `t=`, non-default content fields, non-default style fields — by form input name) are written to the URL query params, so a reload, history entry, or bookmark restores the exact QR. Dynamic mode stops syncing; the params clear naturally when saving redirects to `/edit`.
-
-## Developer notes / gotchas
-
-- **Solid, not React.** Never destructure props — read `props.x` in JSX or via `() => props.x` to keep reactivity. Use `<Show>`/`<For>`.
-- **PDS rejects floats** in records. `style.imageSize` is stored as an integer percent (40 = 40%) and converted to a 0–1 coefficient in `styleToOptions`. Never write float fields to records.
-- **`@atcute/oauth-browser-client` is patched** (`patches/`, registered in `pnpm-workspace.yaml`): the patch makes DPoP nonce retry detect `use_dpop_nonce` from the JSON body, because browsers can't read `WWW-Authenticate` over CORS. If you bump this package, re-apply/re-test the patch.
-- **No `start` script** — deliberate. Railway's Railpack serves `dist` via Caddy only when there's no custom start command. Keep `dev`/`build`/`preview` as the only scripts.
-- **pnpm 11**: build-script approval lives in `pnpm-workspace.yaml` under `allowBuilds`. Don't replace it with `pnpm.onlyBuiltDependencies` or installs fail.
-
-## Deployment
-
-Railway + GitHub. Railpack auto-detects the Vite SPA and serves `dist/` via Caddy (gzip/zstd, SPA fallback, `/health`). No Dockerfile, no Caddyfile. Set the build-time variable on the service:
-
-```
-VITE_PUBLIC_ORIGIN=https://atproto-qr.app
-```
-
-so the generated OAuth metadata and redirect URI match the deployed origin. The app also works on any static host — `dist/` is fully self-contained.
-
-To run your own instance (Docker + Caddy, mirroring Railway's serving), see [`selfhost/`](selfhost/README.md). It lives in a subdirectory so Railway's Railpack never picks it up as a Dockerfile.
-
-### CORS proxy for logo images
-
-To embed a logo, the QR renderer fetches the image cross-origin and draws it
-into a canvas, which requires the host to send CORS headers. Hosts that
-don't (e.g. `zanca.dev/icon.png`) get blocked by the browser, so the logo
-simply won't render.
-
-By default the app tries the image **directly, with no proxy** — nothing goes
-through a third party. When the browser blocks a cross-origin logo, the studio
-offers to route that one image through a CORS proxy (`imageProxy` is stored in
-the code's record). In the studio you can pick the **default proxy**
-(`images.weserv.nl`, or your own via `/settings`) or enter a **custom proxy
-URL** per code. A global default proxy can be set under Settings → Image proxy.
-
-- The fallback proxy is the free public `images.weserv.nl`
-  (`Access-Control-Allow-Origin: *`), which means the logo URL goes through a
-  third party — but only for codes you've opted in on.
-- Self-host your own by setting the build-time variable
-  `VITE_IMAGE_PROXY` to your proxy's origin (e.g. `https://cors-proxy.example.com`).
-- `data:`/`blob:` logo URLs (the in-app upload path) never use a proxy.
-
-Legacy note: codes saved before this change assumed the proxy. Those records
-have no `imageProxy` flag, so they now load the image directly; the owner can
-re-enable the proxy from the editor if a logo stops rendering.
-
-A portable, zero-dependency proxy lives in [`proxy/`](proxy/README.md)
-(single Node ≥ 18 file + Dockerfile, runs anywhere). Lock it down with
-`ALLOWED_ORIGINS=http://127.0.0.1:3000,https://atproto-qr.app`; unset, it
-logs a warning and allows any origin.
+To embed a logo, the app draws it into a canvas, which requires the image host to send CORS headers. Hosts that don't (most static hosts) get blocked by the browser, so the studio offers to route that one image through a CORS proxy — stored per code, opt-in only. The default is the free public `images.weserv.nl`; you can set any off-the-shelf CORS proxy as the global default under **Settings → Image proxy** — it just needs to accept `?url=` and return CORS headers (e.g. `corsproxy.io`). `data:`/`blob:` logo URLs never use a proxy.
 
 ## Privacy
 

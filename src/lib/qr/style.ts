@@ -47,7 +47,7 @@ export function isDefaultStyle(style: QRStyle): boolean {
 export const PROXY_FALLBACK_ORIGIN = 'https://images.weserv.nl';
 
 export function defaultProxyOrigin(): string {
-  return import.meta.env.VITE_IMAGE_PROXY || PROXY_FALLBACK_ORIGIN;
+  return PROXY_FALLBACK_ORIGIN;
 }
 
 export function proxyImageUrl(url: string | null, origin?: string): string | null {
