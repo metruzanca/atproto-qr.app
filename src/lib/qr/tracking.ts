@@ -131,6 +131,13 @@ export async function saveGlobalAnalytics(
 
 const fired = new Set<string>();
 
+async function settleAfter(promise: Promise<void>, ms: number): Promise<void> {
+  await Promise.race([
+    promise.catch(() => {}),
+    new Promise<void>((resolve) => window.setTimeout(resolve, ms)),
+  ]);
+}
+
 export async function fireTracking(config: TrackingConfig, ctx: TrackingContext): Promise<void> {
   const key = `${ctx.url}|${config.provider}|${JSON.stringify(config)}`;
   if (fired.has(key)) return;
@@ -138,13 +145,17 @@ export async function fireTracking(config: TrackingConfig, ctx: TrackingContext)
   try {
     switch (config.provider) {
       case 'ga4':
-        return config.apiSecret ? fireGa4Mp(config, ctx) : fireGa4Gtag(config, ctx);
+        await settleAfter(config.apiSecret ? fireGa4Mp(config, ctx) : fireGa4Gtag(config, ctx), 3000);
+        break;
       case 'plausible':
-        return firePlausible(config, ctx);
+        await settleAfter(firePlausible(config, ctx), 3000);
+        break;
       case 'umami':
-        return fireUmami(config, ctx);
+        await settleAfter(fireUmami(config, ctx), 3000);
+        break;
       case 'matomo':
-        return fireMatomo(config, ctx);
+        await settleAfter(fireMatomo(config, ctx), 3000);
+        break;
     }
   } catch (err) {
     console.warn('analytics beacon failed:', err);
@@ -172,7 +183,6 @@ function fireGa4Gtag(config: Extract<TrackingConfig, { provider: 'ga4' }>, ctx: 
       script.onload = () => resolve();
       script.onerror = () => resolve();
       document.head.appendChild(script);
-      window.setTimeout(resolve, 400);
     } else {
       resolve();
     }
