@@ -134,6 +134,8 @@ VITE_PUBLIC_ORIGIN=https://atproto-qr.app
 
 so the generated OAuth metadata and redirect URI match the deployed origin. The app also works on any static host — `dist/` is fully self-contained.
 
+To run your own instance (Docker + Caddy, mirroring Railway's serving), see [`selfhost/`](selfhost/README.md). It lives in a subdirectory so Railway's Railpack never picks it up as a Dockerfile.
+
 ### CORS proxy for logo images
 
 To embed a logo, the QR renderer fetches the image cross-origin and draws it
