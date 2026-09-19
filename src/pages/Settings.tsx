@@ -23,9 +23,19 @@ export default function Settings() {
   const [codes, setCodes] = createSignal<QRRecordItem[]>([]);
   const [selected, setSelected] = createSignal<Set<string>>(new Set());
   const [loaded, setLoaded] = createSignal(false);
+  const [dirty, setDirty] = createSignal(false);
   const [saving, setSaving] = createSignal(false);
   const [applying, setApplying] = createSignal(false);
   const [error, setError] = createSignal('');
+
+  createEffect(() => {
+    if (!dirty()) setConfig(globalAnalytics());
+  });
+
+  const onConfigChange = (value: TrackingConfig | undefined) => {
+    setDirty(true);
+    setConfig(value);
+  };
 
   createEffect(() => {
     const a = agent();
@@ -33,7 +43,6 @@ export default function Settings() {
     if (!a || !p) return;
     if (loaded()) return;
     setLoaded(true);
-    setConfig(globalAnalytics());
     void (async () => {
       try {
         const all = await listQRRecords(authedClient(a), p.did);
@@ -169,7 +178,7 @@ export default function Settings() {
             </p>
 
             <div class="mt-4">
-              <TrackingConfigFields config={config()} onChange={setConfig} />
+              <TrackingConfigFields config={config()} onChange={onConfigChange} />
             </div>
 
             <Show when={config() && globalAnalytics()}>
