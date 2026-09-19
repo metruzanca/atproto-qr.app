@@ -3,7 +3,7 @@ import { useNavigate, useParams } from '@solidjs/router';
 import { isHandle, isRecordKey } from '@atcute/lexicons/syntax';
 
 import { profile } from '../lib/atproto/auth';
-import { getGlobalAnalytics, getQRRecord, getRedirectRecord } from '../lib/atproto/records';
+import { getGlobalAnalytics, getQRRecord, getRedirectRecord, getSettingsRecord } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
 import { codeUrl, contentTitle, contentToValue, isHttpUrl, type BlobRef } from '../lib/qr/content';
 import { isValidRecord, qrValueFor, type QRKind } from '../lib/qr/record';
@@ -19,6 +19,7 @@ export default function QRPublic() {
   const [status, setStatus] = createSignal<'loading' | 'found' | 'notfound' | 'error'>('loading');
   const [content, setContent] = createSignal<{ type: string; title: string; value: string; kind: QRKind } | null>(null);
   const [style, setStyle] = createSignal<QRStyle | null>(null);
+  const [proxyOrigin, setProxyOrigin] = createSignal<string | undefined>(undefined);
   const [ownerDid, setOwnerDid] = createSignal<string | null>(null);
   const [file, setFile] = createSignal<{ name: string; size: number; mimeType: string; blobUrl: string } | null>(null);
 
@@ -82,6 +83,14 @@ export default function QRPublic() {
         if (cfg) {
           await fireTracking(cfg, { url: location.href, title: document.title, referrer: document.referrer });
         }
+      }
+
+      const stl = item.record.style;
+      if (stl.image && stl.imageProxy && !stl.imageProxyUrl) {
+        const settings = await getSettingsRecord(actor.pds, actor.did);
+        setProxyOrigin(settings?.imageProxy ?? undefined);
+      } else {
+        setProxyOrigin(undefined);
       }
 
       const value = qrValueFor(item.record, codeUrl(params.handle, params.id), ctx);
@@ -161,7 +170,7 @@ export default function QRPublic() {
             when={content()!.type === 'file' && file()}
             fallback={
               <div class="mt-6 flex justify-center rounded-lg bg-slate-50 p-8 dark:bg-slate-800">
-                <QRPreview data={content()!.value} style={style()!} class="max-w-full" />
+                <QRPreview data={content()!.value} style={style()!} proxyOrigin={proxyOrigin()} class="max-w-full" />
               </div>
             }
           >

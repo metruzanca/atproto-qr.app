@@ -170,6 +170,7 @@ export interface SettingsRecord {
   $type: typeof SETTINGS_COLLECTION;
   theme: ThemeSetting;
   analytics?: TrackingConfig;
+  imageProxy?: string;
   updatedAt: string;
 }
 

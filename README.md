@@ -145,12 +145,12 @@ simply won't render.
 
 By default the app tries the image **directly, with no proxy** — nothing goes
 through a third party. When the browser blocks a cross-origin logo, the studio
-detects it and offers to route that one image through a CORS proxy. If you
-accept, `imageProxy` is stored in the code's record so the logo keeps rendering
-for everyone who opens the saved code's page (`proxyImageUrl` in
-`src/lib/qr/style.ts`).
+offers to route that one image through a CORS proxy (`imageProxy` is stored in
+the code's record). In the studio you can pick the **default proxy**
+(`images.weserv.nl`, or your own via `/settings`) or enter a **custom proxy
+URL** per code. A global default proxy can be set under Settings → Image proxy.
 
-- The default proxy is the free public `images.weserv.nl`
+- The fallback proxy is the free public `images.weserv.nl`
   (`Access-Control-Allow-Origin: *`), which means the logo URL goes through a
   third party — but only for codes you've opted in on.
 - Self-host your own by setting the build-time variable

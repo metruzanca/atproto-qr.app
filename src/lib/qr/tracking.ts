@@ -123,6 +123,7 @@ export async function saveGlobalAnalytics(
     $type: SETTINGS_COLLECTION,
     theme: current?.theme ?? 'system',
     analytics: config,
+    imageProxy: current?.imageProxy,
     updatedAt: new Date().toISOString(),
   };
   await putSettingsRecord(authedClient(agentSession), did, record);

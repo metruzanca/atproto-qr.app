@@ -9,8 +9,14 @@ import {
   trackingConfigSummary,
   type TrackingConfig,
 } from '../lib/qr/tracking';
+import {
+  globalImageProxyUrl,
+  saveGlobalImageProxy,
+} from '../lib/qr/imageProxy';
+import { defaultProxyOrigin } from '../lib/qr/style';
 import { TrackingConfigFields } from '../components/TrackingConfigFields';
 import { showToast } from '../components/Toast';
+import { Field, TextInput } from '../components/ui';
 
 function trackingState(item: QRRecordItem): 'none' | 'global' | 'custom' {
   const t = item.record.tracking;
@@ -27,6 +33,61 @@ export default function Settings() {
   const [saving, setSaving] = createSignal(false);
   const [applying, setApplying] = createSignal(false);
   const [error, setError] = createSignal('');
+  const [proxyUrl, setProxyUrl] = createSignal<string | undefined>(undefined);
+  const [proxyDirty, setProxyDirty] = createSignal(false);
+  const [proxySaving, setProxySaving] = createSignal(false);
+
+  createEffect(() => {
+    if (!proxyDirty()) setProxyUrl(globalImageProxyUrl());
+  });
+
+  const onProxyChange = (url: string) => {
+    setProxyDirty(true);
+    setProxyUrl(url || undefined);
+  };
+
+  const saveProxy = async () => {
+    const a = agent();
+    const p = profile();
+    if (!a || !p) return;
+    const url = proxyUrl();
+    if (url && !/^https?:\/\//i.test(url)) {
+      setError('Enter a full proxy URL (https://…).');
+      return;
+    }
+    setProxySaving(true);
+    setError('');
+    try {
+      await saveGlobalImageProxy(a, p.did, url);
+      setProxyDirty(false);
+      showToast('Global image proxy saved');
+    } catch (err) {
+      console.error(err);
+      setError('Could not save. Please try again.');
+    } finally {
+      setProxySaving(false);
+    }
+  };
+
+  const removeProxy = async () => {
+    const a = agent();
+    const p = profile();
+    if (!a || !p) return;
+    if (!confirm('Reset the global image proxy to the default? Codes using the default proxy will use images.weserv.nl.')) return;
+    setProxySaving(true);
+    setError('');
+    try {
+      await saveGlobalImageProxy(a, p.did, undefined);
+      setProxyUrl(undefined);
+      setProxyDirty(false);
+      showToast('Global image proxy removed');
+    } catch (err) {
+      console.error(err);
+      setError('Could not remove the global image proxy.');
+    } finally {
+      setProxySaving(false);
+    }
+  };
 
   createEffect(() => {
     if (!dirty()) setConfig(globalAnalytics());
@@ -201,6 +262,76 @@ export default function Settings() {
                   type="button"
                   onClick={remove}
                   disabled={saving()}
+                  class="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:opacity-60 dark:border-red-500/30 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
+                >
+                  Remove
+                </button>
+              </Show>
+            </div>
+          </section>
+
+          <section class="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Image proxy
+            </h2>
+            <p class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              When a logo can't be loaded directly into a QR code, it's routed through an image proxy. Choose the
+              default proxy for your codes here — codes that use the default proxy pick up this change automatically.
+            </p>
+
+            <div class="mt-4 space-y-2.5">
+              <label class="flex cursor-pointer items-start gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="global-proxy"
+                  checked={proxyUrl() === undefined}
+                  onChange={() => onProxyChange('')}
+                  class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-sky-600 focus:ring-sky-500 dark:border-slate-600 dark:bg-slate-800"
+                />
+                <span>
+                  <span class="font-medium text-slate-900 dark:text-white">Default proxy</span>
+                  <span class="block text-xs text-slate-500 dark:text-slate-400">{defaultProxyOrigin()}</span>
+                </span>
+              </label>
+              <label class="flex cursor-pointer items-start gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="global-proxy"
+                  checked={proxyUrl() !== undefined}
+                  onChange={() => onProxyChange(proxyUrl() ?? '')}
+                  class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-sky-600 focus:ring-sky-500 dark:border-slate-600 dark:bg-slate-800"
+                />
+                <span class="min-w-0 flex-1">
+                  <span class="block font-medium text-slate-900 dark:text-white">Custom proxy</span>
+                  <span class="block text-xs text-slate-500 dark:text-slate-400">Enter your own proxy URL</span>
+                </span>
+              </label>
+              <Show when={proxyUrl() !== undefined}>
+                <Field label="Proxy URL">
+                  <TextInput
+                    placeholder="https://your-proxy.example.com"
+                    spellcheck={false}
+                    value={proxyUrl() ?? ''}
+                    onInput={(e) => onProxyChange(e.currentTarget.value)}
+                  />
+                </Field>
+              </Show>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={saveProxy}
+                disabled={proxySaving()}
+                class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
+              >
+                {proxySaving() ? 'Saving…' : 'Save'}
+              </button>
+              <Show when={globalImageProxyUrl()}>
+                <button
+                  type="button"
+                  onClick={removeProxy}
+                  disabled={proxySaving()}
                   class="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:opacity-60 dark:border-red-500/30 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
                 >
                   Remove

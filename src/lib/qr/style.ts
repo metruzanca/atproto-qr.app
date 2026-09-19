@@ -16,6 +16,7 @@ export interface QRStyle {
   imageSize: number;
   errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H';
   imageProxy?: boolean;
+  imageProxyUrl?: string;
 }
 
 export const DEFAULT_STYLE: QRStyle = {
@@ -34,6 +35,7 @@ export const DEFAULT_STYLE: QRStyle = {
   imageSize: 40,
   errorCorrectionLevel: 'H',
   imageProxy: false,
+  imageProxyUrl: undefined,
 };
 
 export const ERROR_CORRECTION_LEVELS: ('L' | 'M' | 'Q' | 'H')[] = ['L', 'M', 'Q', 'H'];
@@ -42,22 +44,22 @@ export function isDefaultStyle(style: QRStyle): boolean {
   return (Object.keys(DEFAULT_STYLE) as (keyof QRStyle)[]).every((key) => style[key] === DEFAULT_STYLE[key]);
 }
 
-const PROXY_FALLBACK_ORIGIN = 'https://images.weserv.nl';
+export const PROXY_FALLBACK_ORIGIN = 'https://images.weserv.nl';
 
-function proxyOrigin(): string {
+export function defaultProxyOrigin(): string {
   return import.meta.env.VITE_IMAGE_PROXY || PROXY_FALLBACK_ORIGIN;
 }
 
-export function proxyImageUrl(url: string | null): string | null {
+export function proxyImageUrl(url: string | null, origin?: string): string | null {
   if (!url) return null;
   if (/^(data|blob):/i.test(url)) return url;
-  const origin = proxyOrigin();
-  if (url.startsWith(origin) || url.startsWith(PROXY_FALLBACK_ORIGIN)) return url;
+  const o = origin || defaultProxyOrigin();
+  if (url.startsWith(o) || url.startsWith(PROXY_FALLBACK_ORIGIN)) return url;
   if (!/^https?:\/\//i.test(url)) return url;
-  return `${origin}/?url=${encodeURIComponent(url)}`;
+  return `${o}/?url=${encodeURIComponent(url)}`;
 }
 
-export function styleToOptions(style: QRStyle, data: string): RecursivePartial<Options> {
+export function styleToOptions(style: QRStyle, data: string, proxyOrigin?: string): RecursivePartial<Options> {
   return {
     size: style.size,
     data,
@@ -82,7 +84,7 @@ export function styleToOptions(style: QRStyle, data: string): RecursivePartial<O
     backgroundOptions: { color: style.backgroundColor, margin: style.backgroundMargin },
     image: style.image
       ? style.imageProxy
-        ? (proxyImageUrl(style.image) ?? undefined)
+        ? (proxyImageUrl(style.image, style.imageProxyUrl ?? proxyOrigin) ?? undefined)
         : style.image
       : undefined,
     imageOptions: {

@@ -6,6 +6,7 @@ import type { Draft, QRKind } from '../lib/qr/record';
 import { contentToValue } from '../lib/qr/content';
 import { isDefaultStyle } from '../lib/qr/style';
 import { trackingConfigSummary, type QRCodeTracking, type TrackingConfig } from '../lib/qr/tracking';
+import { resolveProxyOrigin } from '../lib/qr/imageProxy';
 import type { UploadedFile } from '../lib/atproto/records';
 import { QRPreview } from './QRPreview';
 import { ContentFields } from './ContentFields';
@@ -225,7 +226,11 @@ export function Studio(props: Props) {
 
           <Show when={styleOpen()}>
             <div id="style-controls">
-              <StyleControls style={props.draft.style} onChange={(style) => props.onChange({ ...props.draft, style })} />
+              <StyleControls
+                style={props.draft.style}
+                defaultProxyOrigin={resolveProxyOrigin(undefined)}
+                onChange={(style) => props.onChange({ ...props.draft, style })}
+              />
             </div>
           </Show>
         </section>
@@ -291,6 +296,7 @@ export function Studio(props: Props) {
             <QRPreview
               data={data()}
               style={props.draft.style}
+              proxyOrigin={resolveProxyOrigin(undefined)}
               class="max-w-full"
               emptyHint={props.emptyHint}
               onReady={(q) => setQr(q)}

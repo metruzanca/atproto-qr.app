@@ -6,6 +6,7 @@ import { styleToOptions, type QRStyle } from '../lib/qr/style';
 interface Props {
   data: string;
   style: QRStyle;
+  proxyOrigin?: string;
   class?: string;
   emptyHint?: string;
   onReady?: (qr: QRCodeStyling) => void;
@@ -17,6 +18,7 @@ export function QRPreview(props: Props): JSX.Element {
 
   createEffect(() => {
     const data = props.data;
+    const origin = props.proxyOrigin;
     if (!container) return;
 
     if (!data) {
@@ -28,11 +30,11 @@ export function QRPreview(props: Props): JSX.Element {
     }
 
     if (!qr) {
-      qr = new QRCodeStyling(styleToOptions(props.style, data));
+      qr = new QRCodeStyling(styleToOptions(props.style, data, origin));
       qr.append(container);
       props.onReady?.(qr);
     } else {
-      qr.update(styleToOptions(props.style, data));
+      qr.update(styleToOptions(props.style, data, origin));
     }
   });
 

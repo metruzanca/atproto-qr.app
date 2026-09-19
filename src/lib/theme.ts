@@ -90,6 +90,7 @@ createRoot(() => {
           $type: SETTINGS_COLLECTION,
           theme: t,
           analytics: current?.analytics,
+          imageProxy: current?.imageProxy,
           updatedAt: new Date().toISOString(),
         };
         await putSettingsRecord(authedClient(a), p.did, record);
