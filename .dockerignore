@@ -3,7 +3,6 @@ dist
 .git
 .env
 .env.*
-proxy
 README.md
 AGENTS.md
 .gitignore
