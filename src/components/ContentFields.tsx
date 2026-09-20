@@ -351,8 +351,8 @@ function FileField(props: {
   return (
     <Field label="File" hint="One file, up to 5 MB.">
       <Show when={!props.onUploadFile}>
-        <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          <A href={props.loginHref ?? '/login'} class="font-semibold text-sky-600 hover:underline">
+        <div class="rounded-xl border border-slate-200/80 bg-white/50 px-4 py-3 text-sm text-slate-600 backdrop-blur dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300">
+          <A href={props.loginHref ?? '/login'} class="font-semibold text-sky-600 hover:underline dark:text-sky-400">
             Sign in
           </A>{' '}
           to upload a file to your Bluesky account.
@@ -371,20 +371,20 @@ function FileField(props: {
                 e.currentTarget.value = '';
                 if (file) void handleFile(file);
               }}
-              class="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800 disabled:opacity-60 dark:text-slate-300 dark:file:bg-slate-700 dark:hover:file:bg-slate-600"
+              class="block w-full text-sm text-slate-700 file:mr-3 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-sky-500 file:to-blue-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white file:shadow-[0_4px_14px_-4px_rgb(37_99_235_/_0.5)] hover:file:from-sky-400 disabled:opacity-60 dark:text-slate-300"
             />
           }
         >
-          <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800">
+          <div class="rounded-xl border border-slate-200/80 bg-white/50 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/[0.03]">
             <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{String(props.fields.name ?? '')}</p>
             <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {formatSize(Number(props.fields.size ?? 0))} · {String(props.fields.mimeType ?? '')}
             </p>
             <div class="mt-3 flex gap-2">
               <label
-                class={`cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 ${
+                class={`cursor-pointer rounded-xl border border-slate-200/80 bg-white/60 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur transition-colors hover:border-slate-300 hover:bg-white ${
                   props.disabled ? 'pointer-events-none opacity-60' : ''
-                } dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600`}
+                } dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-200 dark:hover:border-white/20 dark:hover:bg-white/[0.1]`}
               >
                 Replace
                 <input
@@ -402,7 +402,7 @@ function FileField(props: {
                 type="button"
                 disabled={props.disabled || uploading()}
                 onClick={() => props.onChange({ name: '', mimeType: '', size: 0, blob: null })}
-                class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:opacity-60 dark:border-red-500/30 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
+                class="rounded-xl border border-red-200 bg-white/60 px-3 py-1.5 text-xs font-semibold text-red-600 shadow-sm backdrop-blur transition-colors hover:bg-red-50 disabled:opacity-60 dark:border-red-500/30 dark:bg-white/[0.06] dark:text-red-400 dark:hover:bg-red-500/10"
               >
                 Remove
               </button>

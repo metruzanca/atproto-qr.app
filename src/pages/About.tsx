@@ -5,8 +5,8 @@ import { agent, profile } from '../lib/atproto/auth';
 
 function Disclosure(props: { summary: string; children: JSX.Element }) {
   return (
-    <details class="group rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-      <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800">
+    <details class="group card card-hover px-4 py-3">
+      <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-800 dark:text-slate-100">
         {props.summary}
         <svg
           viewBox="0 0 20 20"
@@ -21,7 +21,7 @@ function Disclosure(props: { summary: string; children: JSX.Element }) {
           />
         </svg>
       </summary>
-      <div class="border-t border-slate-100 px-4 py-4 text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">{props.children}</div>
+      <div class="group-open:animate-fade-in mt-3 border-t border-slate-100 pt-3 text-sm leading-relaxed text-slate-600 dark:border-white/10 dark:text-slate-300">{props.children}</div>
     </details>
   );
 }
@@ -33,7 +33,7 @@ export default function About() {
     <main class="mx-auto max-w-3xl px-4 py-12">
       <section class="text-center">
         <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-          Private by design. Everything runs in your browser.
+          Private by design. <span class="text-gradient">Everything runs in your browser.</span>
         </h1>
         <p class="mx-auto mt-3 max-w-2xl text-slate-600 dark:text-slate-300">
           This site has no backend server — no database, no accounts, no logs. Every line of code runs on{' '}
@@ -80,29 +80,27 @@ export default function About() {
         <Show
           when={profile()}
           fallback={
-            <div class="mt-5 rounded-xl border border-dashed border-slate-300 bg-white p-5 dark:border-slate-600 dark:bg-slate-900">
+            <div class="card mt-5 border-dashed p-5">
               <p class="text-sm text-slate-600 dark:text-slate-300">
                 Sign in to see exactly which server would hold your codes.
               </p>
-              <A
-                href="/login"
-                class="mt-3 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
-              >
+              <A href="/login" class="btn-primary mt-3 inline-block py-2">
                 Sign in
               </A>
             </div>
           }
         >
           {(p) => (
-            <div class="mt-5 rounded-xl border border-sky-200 bg-sky-50 p-5 dark:border-sky-500/30 dark:bg-sky-500/10">
-              <p class="text-sm font-medium text-sky-900 dark:text-sky-100">
+            <div class="relative mt-5 overflow-hidden rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-500/10 to-blue-600/10 p-5 backdrop-blur dark:border-sky-500/30">
+              <div class="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-sky-500/10 blur-2xl" />
+              <p class="relative text-sm font-medium text-sky-900 dark:text-sky-100">
                 You're signed in as <span class="font-semibold">{p().handle}</span>.
               </p>
-              <p class="mt-1 text-sm text-sky-900 dark:text-sky-100">Your QR codes are stored on your personal data server:</p>
-              <p class="mt-2 break-all rounded-lg border border-sky-100 bg-white px-3 py-2 font-mono text-sm text-slate-800 dark:border-sky-500/30 dark:bg-slate-800 dark:text-slate-200">
+              <p class="relative mt-1 text-sm text-sky-900 dark:text-sky-100">Your QR codes are stored on your personal data server:</p>
+              <p class="relative mt-2 break-all rounded-xl border border-sky-200/60 bg-white/70 px-3 py-2 font-mono text-sm text-slate-800 backdrop-blur dark:border-sky-500/30 dark:bg-white/[0.04] dark:text-slate-200">
                 {pdsUrl()}
               </p>
-              <p class="mt-2 text-xs text-sky-700 dark:text-sky-300">
+              <p class="relative mt-2 text-xs text-sky-700 dark:text-sky-300">
                 That's the only server involved. This site never sees your codes — your browser writes them directly to
                 your PDS, and reads them straight back when someone opens a code's page.
               </p>
@@ -261,16 +259,13 @@ export default function About() {
         </div>
       </section>
 
-      <section class="mt-12 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+      <section class="card mt-12 p-6 text-center">
         <h2 class="text-lg font-bold text-slate-900 dark:text-white">Technical reference</h2>
         <p class="mx-auto mt-1 max-w-xl text-sm text-slate-600 dark:text-slate-300">
           Every record this app reads and writes is defined by an atproto lexicon. Read the exact shapes — the three
           lexicons this app defines and the standard atproto and Bluesky ones it calls.
         </p>
-        <A
-          href="/lexicons"
-          class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
-        >
+        <A href="/lexicons" class="btn-primary mt-4 inline-block">
           View the lexicons
         </A>
       </section>

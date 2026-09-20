@@ -73,7 +73,7 @@ export function ThemeMenu() {
         }}
         aria-label="Theme"
         title="Theme"
-        class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        class="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-500/10 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
       >
         <Show when={effectiveTheme() === 'dark'} fallback={OPTIONS[0].icon}>
           {OPTIONS[1].icon}
@@ -81,7 +81,7 @@ export function ThemeMenu() {
       </button>
 
       <Show when={open()}>
-        <div class="absolute right-0 z-30 mt-2 w-40 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div class="animate-pop-in absolute right-0 z-30 mt-2 w-40 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 p-1 shadow-[0_16px_40px_-12px_rgb(2_6_23_/_0.3)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0a1120]/95">
           <For each={OPTIONS}>
             {(o) => (
               <button
@@ -91,10 +91,10 @@ export function ThemeMenu() {
                   setTheme(o.value);
                   setOpen(false);
                 }}
-                class={`flex w-full items-center justify-between gap-2 px-3 py-2 text-sm font-medium ${
+                class={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
                   theme() === o.value
-                    ? 'text-sky-600 dark:text-sky-400'
-                    : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
+                    ? 'bg-gradient-to-r from-sky-500/15 to-blue-600/15 text-sky-600 dark:text-sky-400'
+                    : 'text-slate-700 hover:bg-slate-500/10 dark:text-slate-200 dark:hover:bg-white/[0.06]'
                 }`}
               >
                 <span class="flex items-center gap-2">

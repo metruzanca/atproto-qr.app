@@ -1,6 +1,7 @@
 import type { JSX } from 'solid-js';
 
 import type { ContentType } from '../lib/qr/content';
+import { Reveal } from './Reveal';
 
 const iconClass = 'h-5 w-5';
 
@@ -196,115 +197,137 @@ const tips: { title: string; body: string }[] = [
   },
 ];
 
+function Eyebrow(props: { label: string }) {
+  return (
+    <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400">
+      <span class="h-px w-6 rounded-full bg-gradient-to-r from-sky-500 to-blue-600" />
+      {props.label}
+    </p>
+  );
+}
+
 export function UsageGuide() {
   return (
-    <div class="mt-16 space-y-16">
-      <section>
-        <div class="max-w-2xl">
-          <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Ideas for your next code</h2>
+    <div class="mt-24 space-y-24">
+      <section id="ideas" class="hairline scroll-mt-20 pt-14">
+        <Reveal>
+          <Eyebrow label="Inspiration" />
+          <h2 class="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Ideas for your next code</h2>
           <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             Every content type is a ready-made use case. Pick one below to start, or read through the ideas — most
             people don’t need all of them, just the one that matches their situation.
           </p>
-        </div>
+        </Reveal>
 
         <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {EXAMPLES.map((card) => (
-            <div class="flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-              <div class="flex items-center justify-between">
-                <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  {card.icon}
-                </span>
-                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                  {card.label}
-                </span>
+          {EXAMPLES.map((card, i) => (
+            <Reveal delay={(i % 3) * 90} class="h-full">
+              <div class="card card-hover flex h-full flex-col p-5">
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/15 text-sky-600 ring-1 ring-inset ring-sky-500/20 dark:text-sky-400 dark:ring-sky-400/20">
+                    {card.icon}
+                  </span>
+                  <span class="badge bg-slate-500/10 text-slate-500 dark:text-slate-400">{card.label}</span>
+                </div>
+                <h3 class="mt-3 text-sm font-bold text-slate-900 dark:text-white">{card.title}</h3>
+                <p class="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{card.desc}</p>
+                <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  <span class="font-semibold text-slate-700 dark:text-slate-200">Tip:</span> {card.tip}
+                </p>
               </div>
-              <h3 class="mt-3 text-sm font-bold text-slate-900 dark:text-white">{card.title}</h3>
-              <p class="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{card.desc}</p>
-              <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                <span class="font-semibold text-slate-700 dark:text-slate-200">Tip:</span> {card.tip}
-              </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Fixed or Dynamic? How to choose</h2>
-        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          A printed code does one of two things: the information is baked into the square, or the square holds a page
-          you can point somewhere new later.
-        </p>
+        <Reveal>
+          <Eyebrow label="Decision guide" />
+          <h2 class="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Fixed or Dynamic? How to choose</h2>
+          <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            A printed code does one of two things: the information is baked into the square, or the square holds a page
+            you can point somewhere new later.
+          </p>
+        </Reveal>
 
         <div class="mt-8 grid gap-4 sm:grid-cols-2">
-          <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-            <div class="flex items-center gap-2">
-              <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </span>
-              <h3 class="text-base font-bold text-slate-900 dark:text-white">Fixed — data baked in</h3>
+          <Reveal class="h-full">
+            <div class="card card-hover flex h-full flex-col p-6">
+              <div class="flex items-center gap-2.5">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:text-emerald-300">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </span>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Fixed — data baked in</h3>
+              </div>
+              <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                The link, WiFi details, or contact info live inside the code itself. Print it once and it works forever —
+                no account, no app, no server in between.
+              </p>
+              <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                <span class="font-semibold text-slate-700 dark:text-slate-200">Best for:</span> WiFi, contact cards, and permanent info that
+                will never change.
+              </p>
+              <p class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                <span class="font-semibold text-slate-700 dark:text-slate-200">Note:</span> after saving, the data is locked. You can restyle
+                it freely, but changing what it points to produces a new image.
+              </p>
             </div>
-            <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-              The link, WiFi details, or contact info live inside the code itself. Print it once and it works forever —
-              no account, no app, no server in between.
-            </p>
-            <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              <span class="font-semibold text-slate-700 dark:text-slate-200">Best for:</span> WiFi, contact cards, and permanent info that
-              will never change.
-            </p>
-            <p class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              <span class="font-semibold text-slate-700 dark:text-slate-200">Note:</span> after saving, the data is locked. You can restyle
-              it freely, but changing what it points to produces a new image.
-            </p>
-          </div>
+          </Reveal>
 
-          <div class="rounded-xl border border-violet-200 bg-violet-50/50 p-6 shadow-sm dark:border-violet-500/30 dark:bg-violet-500/10">
-            <div class="flex items-center gap-2">
-              <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
-                  <polyline points="23 4 23 10 17 10" />
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                </svg>
-              </span>
-              <h3 class="text-base font-bold text-slate-900 dark:text-white">Dynamic — change it after printing</h3>
+          <Reveal delay={120} class="h-full">
+            <div class="card card-hover flex h-full flex-col border-violet-200/70 bg-violet-50/60 p-6 dark:border-violet-500/30 dark:bg-violet-500/10">
+              <div class="flex items-center gap-2.5">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/15 text-violet-700 ring-1 ring-inset ring-violet-500/20 dark:text-violet-300">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
+                    <polyline points="23 4 23 10 17 10" />
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                  </svg>
+                </span>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Dynamic — change it after printing</h3>
+              </div>
+              <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                The code points at a page you control. Update the destination any time — the printed code never changes,
+                and it always shows your latest info.
+              </p>
+              <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                <span class="font-semibold text-slate-700 dark:text-slate-200">Best for:</span> menus, offers, and events you’ll repoint.
+              </p>
+              <p class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                <span class="font-semibold text-slate-700 dark:text-slate-200">Note:</span> needs a sign-in — your codes live on your own
+                Bluesky account. The code’s page depends on this app and your account staying online.
+              </p>
             </div>
-            <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-              The code points at a page you control. Update the destination any time — the printed code never changes,
-              and it always shows your latest info.
-            </p>
-            <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              <span class="font-semibold text-slate-700 dark:text-slate-200">Best for:</span> menus, offers, and events you’ll repoint.
-            </p>
-            <p class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              <span class="font-semibold text-slate-700 dark:text-slate-200">Note:</span> needs a sign-in — your codes live on your own
-              Bluesky account. The code’s page depends on this app and your account staying online.
-            </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       <section>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Print and placement tips</h2>
-        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          A well-designed code is only half the job. These rules of thumb keep yours scannable out in the real world.
-        </p>
+        <Reveal>
+          <Eyebrow label="Real-world advice" />
+          <h2 class="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Print and placement tips</h2>
+          <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            A well-designed code is only half the job. These rules of thumb keep yours scannable out in the real world.
+          </p>
+        </Reveal>
 
         <div class="mt-8 grid gap-4 sm:grid-cols-2">
-          {tips.map((tip) => (
-            <div class="flex gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-              <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-              </span>
-              <div>
-                <h3 class="text-sm font-bold text-slate-900 dark:text-white">{tip.title}</h3>
-                <p class="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{tip.body}</p>
+          {tips.map((tip, i) => (
+            <Reveal delay={(i % 2) * 90} class="h-full">
+              <div class="card card-hover flex h-full gap-3 p-5">
+                <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:text-emerald-300">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900 dark:text-white">{tip.title}</h3>
+                  <p class="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{tip.body}</p>
+                </div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>

@@ -105,14 +105,16 @@ export default function Login() {
       <Show
         when={profile()}
         fallback={
-          <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Sign in with atproto</h1>
-            <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          <div class="card relative p-8">
+            <div class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-500/15 blur-3xl dark:bg-sky-400/10" />
+            <div class="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-blue-600/10 blur-3xl dark:bg-blue-500/10" />
+            <h1 class="relative text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign in with atproto</h1>
+            <p class="relative mt-2 text-sm text-slate-600 dark:text-slate-300">
               Enter your handle (e.g. <span class="font-mono">alice.bsky.social</span>). You'll be redirected to your
               provider to authorize this app. Your QR codes are stored as records in{' '}
               <span class="font-semibold">your</span> Bluesky account — not on our servers.
             </p>
-            <form class="mt-6 space-y-4" onSubmit={submit}>
+            <form class="relative mt-6 space-y-4" onSubmit={submit}>
               <Field label="Handle">
                 <div class="relative">
                   <Show when={selected()?.avatar}>
@@ -120,11 +122,12 @@ export default function Login() {
                       src={selected()!.avatar ?? undefined}
                       alt=""
                       class="pointer-events-none absolute left-2 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-slate-200 dark:bg-slate-700"
+                      referrerPolicy="no-referrer"
                     />
                   </Show>
                   <TextInput
                     placeholder="alice.bsky.social"
-                    autocomplete="off"
+                    autocomplete="username"
                     class={selected() ? 'pl-10' : undefined}
                     value={handle()}
                     onInput={(e) => {
@@ -137,7 +140,7 @@ export default function Login() {
                   />
                   <Show when={open()}>
                     <ul
-                      class="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+                      class="absolute z-20 mt-1.5 max-h-72 w-full overflow-y-auto rounded-xl border border-slate-200/80 bg-white/90 p-1 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-[#0a1120]/90"
                       role="listbox"
                     >
                       <For each={suggestions()}>
@@ -148,8 +151,8 @@ export default function Login() {
                             onMouseDown={(e) => e.preventDefault()}
                             onMouseEnter={() => setActiveIndex(i())}
                             onClick={() => select(s)}
-                            class={`flex cursor-pointer items-center gap-3 px-3 py-2 ${
-                              activeIndex() === i() ? 'bg-sky-50 dark:bg-sky-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                            class={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 ${
+                              activeIndex() === i() ? 'bg-sky-500/10 dark:bg-sky-500/15' : 'hover:bg-slate-500/10 dark:hover:bg-white/[0.06]'
                             }`}
                           >
                             <Show when={s.avatar}>
@@ -176,11 +179,7 @@ export default function Login() {
               <Show when={error()}>
                 <p class="text-sm text-red-600 dark:text-red-400">{error()}</p>
               </Show>
-              <button
-                type="submit"
-                disabled={busy()}
-                class="w-full rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
-              >
+              <button type="submit" disabled={busy()} class="btn-primary w-full py-3">
                 {busy() ? 'Redirecting…' : 'Continue'}
               </button>
             </form>
@@ -188,11 +187,11 @@ export default function Login() {
         }
       >
         {(p) => (
-          <div class="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+          <div class="card p-8 text-center">
             <p class="text-sm text-slate-600 dark:text-slate-300">
               You're signed in as <span class="font-semibold text-slate-900 dark:text-white">{p().handle}</span>.
             </p>
-            <a href="/codes" class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white">
+            <a href="/codes" class="btn-primary mt-4 inline-block">
               Go to my QR codes
             </a>
           </div>

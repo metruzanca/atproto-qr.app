@@ -206,34 +206,34 @@ export default function Settings() {
       <Show
         when={authReady()}
         fallback={
-          <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-500" />
+          <div class="spinner" />
         }
       >
         <Show
           when={profile()}
           fallback={
-            <div class="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+            <div class="card p-8 text-center">
               <h1 class="text-xl font-bold text-slate-900 dark:text-white">Sign in to manage your settings</h1>
-              <a href="/login" class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white">
+              <a href="/login" class="btn-primary mt-4 inline-block">
                 Sign in
               </a>
             </div>
           }
         >
           <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Settings</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400">Stored in your own account on the network.</p>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Settings</h1>
+            <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Stored in your own account on the network.</p>
           </div>
 
           <Show when={error()}>
             <p class="mb-4 text-sm text-red-600 dark:text-red-400">{error()}</p>
           </Show>
 
-          <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <section class="card p-5">
+            <h2 class="section-label">
               Global analytics
             </h2>
-            <p class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            <p class="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
               One tracking setup used by any dynamic code that opts into global tracking. Change it any time — codes
               already using it pick up the change on their next visit.
             </p>
@@ -243,63 +243,53 @@ export default function Settings() {
             </div>
 
             <Show when={config() && globalAnalytics()}>
-              <p class="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              <p class="mt-4 rounded-xl bg-white/50 px-3 py-2 text-xs text-slate-500 backdrop-blur dark:bg-white/[0.03] dark:text-slate-400">
                 Currently saved: {trackingConfigSummary(globalAnalytics()!)}
               </p>
             </Show>
 
             <div class="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={save}
-                disabled={saving()}
-                class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
-              >
+              <button type="button" onClick={save} disabled={saving()} class="btn-primary">
                 {saving() ? 'Saving…' : 'Save'}
               </button>
               <Show when={globalAnalytics()}>
-                <button
-                  type="button"
-                  onClick={remove}
-                  disabled={saving()}
-                  class="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:opacity-60 dark:border-red-500/30 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
-                >
+                <button type="button" onClick={remove} disabled={saving()} class="btn-danger">
                   Remove
                 </button>
               </Show>
             </div>
           </section>
 
-          <section class="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <section class="card mt-6 p-5">
+            <h2 class="section-label">
               Image proxy
             </h2>
-            <p class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            <p class="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
               When a logo can't be loaded directly into a QR code, it's routed through an image proxy. Choose the
               default proxy for your codes here — codes that use the default proxy pick up this change automatically.
             </p>
 
             <div class="mt-4 space-y-2.5">
-              <label class="flex cursor-pointer items-start gap-2 text-sm">
+              <label class="flex cursor-pointer items-start gap-2.5 text-sm">
                 <input
                   type="radio"
                   name="global-proxy"
                   checked={proxyUrl() === undefined}
                   onChange={() => onProxyChange('')}
-                  class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-sky-600 focus:ring-sky-500 dark:border-slate-600 dark:bg-slate-800"
+                  class="mt-0.5 h-4 w-4 shrink-0 accent-sky-600"
                 />
                 <span>
                   <span class="font-medium text-slate-900 dark:text-white">Default proxy</span>
                   <span class="block text-xs text-slate-500 dark:text-slate-400">{defaultProxyOrigin()}</span>
                 </span>
               </label>
-              <label class="flex cursor-pointer items-start gap-2 text-sm">
+              <label class="flex cursor-pointer items-start gap-2.5 text-sm">
                 <input
                   type="radio"
                   name="global-proxy"
                   checked={proxyUrl() !== undefined}
                   onChange={() => onProxyChange(proxyUrl() ?? '')}
-                  class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-sky-600 focus:ring-sky-500 dark:border-slate-600 dark:bg-slate-800"
+                  class="mt-0.5 h-4 w-4 shrink-0 accent-sky-600"
                 />
                 <span class="min-w-0 flex-1">
                   <span class="block font-medium text-slate-900 dark:text-white">Custom proxy</span>
@@ -319,21 +309,11 @@ export default function Settings() {
             </div>
 
             <div class="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={saveProxy}
-                disabled={proxySaving()}
-                class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
-              >
+              <button type="button" onClick={saveProxy} disabled={proxySaving()} class="btn-primary">
                 {proxySaving() ? 'Saving…' : 'Save'}
               </button>
               <Show when={globalImageProxyUrl()}>
-                <button
-                  type="button"
-                  onClick={removeProxy}
-                  disabled={proxySaving()}
-                  class="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:opacity-60 dark:border-red-500/30 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
-                >
+                <button type="button" onClick={removeProxy} disabled={proxySaving()} class="btn-danger">
                   Remove
                 </button>
               </Show>
@@ -341,11 +321,11 @@ export default function Settings() {
           </section>
 
           <Show when={globalAnalytics()}>
-            <section class="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-              <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <section class="card mt-6 p-5">
+              <h2 class="section-label">
                 Apply to existing codes
               </h2>
-              <p class="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              <p class="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                 Opt {dynamicCount()} dynamic code{dynamicCount() === 1 ? '' : 's'} in to global tracking. Codes with
                 custom tracking are left alone.
               </p>
@@ -355,7 +335,7 @@ export default function Settings() {
               </Show>
 
               <Show when={dynamicCount() > 0}>
-                <ul class="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
+                <ul class="mt-4 divide-y divide-slate-100 dark:divide-white/[0.06]">
                   <For each={codes()}>
                     {(item) => {
                       const state = trackingState(item);
@@ -367,18 +347,18 @@ export default function Settings() {
                             checked={selected().has(item.rkey)}
                             disabled={isCustom}
                             onChange={() => toggle(item.rkey)}
-                            class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 disabled:opacity-40 dark:border-slate-600 dark:bg-slate-800"
+                            class="h-4 w-4 rounded accent-sky-600 disabled:opacity-40"
                           />
                           <span class="min-w-0 flex-1 truncate text-sm font-medium text-slate-900 dark:text-white">
                             {item.rkey}
                           </span>
                           <span
-                            class={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                            class={`badge ${
                               state === 'custom'
-                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'
+                                ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                                 : state === 'global'
-                                  ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300'
-                                  : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                                  ? 'bg-violet-500/15 text-violet-700 dark:text-violet-300'
+                                  : 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
                             }`}
                           >
                             {state === 'custom' ? 'Custom' : state === 'global' ? 'Global' : 'None'}
@@ -393,7 +373,7 @@ export default function Settings() {
                   type="button"
                   onClick={apply}
                   disabled={applying() || selected().size === 0}
-                  class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 dark:bg-slate-700 dark:hover:bg-slate-600"
+                  class="btn-primary mt-4"
                 >
                   {applying() ? 'Applying…' : `Apply to ${selected().size} selected`}
                 </button>

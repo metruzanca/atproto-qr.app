@@ -23,13 +23,13 @@ export default function Callback() {
         when={error()}
         fallback={
           <div>
-            <div class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-500" />
+            <div class="spinner h-10 w-10" />
             <p class="mt-4 text-sm text-slate-600 dark:text-slate-300">Completing sign-in…</p>
           </div>
         }
       >
         <p class="text-sm text-red-600 dark:text-red-400">{error()}</p>
-        <a href="/login" class="mt-4 inline-block text-sm font-semibold text-sky-600">
+        <a href="/login" class="mt-4 inline-block text-sm font-semibold text-sky-600 dark:text-sky-400">
           Try again
         </a>
       </Show>

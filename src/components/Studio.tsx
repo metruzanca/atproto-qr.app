@@ -1,4 +1,4 @@
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createEffect, createSignal, Show, type JSX } from 'solid-js';
 import { A } from '@solidjs/router';
 import { browserUtils, type QRCodeStyling } from '@liquid-js/qr-code-styling';
 
@@ -38,6 +38,47 @@ interface Props {
   onTrackingChange?: (tracking: QRCodeTracking | undefined) => void;
   globalAnalytics?: TrackingConfig | undefined;
 }
+
+const iconClass = 'h-4 w-4';
+
+const kindIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
+    <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+    <path d="m3 13 9 5 9-5" />
+    <path d="m3 18 9 5 9-5" />
+  </svg>
+);
+
+const contentIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </svg>
+);
+
+const styleIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
+    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+  </svg>
+);
+
+const analyticsIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
+    <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+    <path d="m7 16 4-5 3 3 5-7" />
+  </svg>
+);
+
+const previewIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={iconClass}>
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
 
 export function Studio(props: Props) {
   const [qr, setQr] = createSignal<QRCodeStyling | null>(null);
@@ -97,11 +138,11 @@ export function Studio(props: Props) {
   };
 
   return (
-    <div class="grid gap-8 lg:grid-cols-2">
-      <div class="space-y-8">
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+      <div class="min-w-0 space-y-8">
         <Show when={props.onKindChange}>
-          <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-            <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Code type</h2>
+          <section class="card p-5">
+            <SectionHeader icon={kindIcon} title="Code type" hint="Fixed encodes your data; Dynamic encodes a link to it" />
             <Segmented
               value={props.kind}
               options={[
@@ -126,7 +167,8 @@ export function Studio(props: Props) {
             </Show>
 
             <Show when={props.kind === 'dynamic' && !props.onSave && props.loginHref}>
-              <div class="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-4 dark:border-sky-500/30 dark:bg-sky-500/10">
+              <div class="relative mt-4 overflow-hidden rounded-xl border border-sky-200/70 bg-gradient-to-br from-sky-500/10 to-blue-600/10 p-4 dark:border-sky-500/30 dark:from-sky-500/15 dark:to-blue-600/15">
+                <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-sky-500/10 blur-2xl dark:bg-sky-400/10" />
                 <h3 class="text-sm font-semibold text-sky-900 dark:text-sky-100">How dynamic codes work</h3>
                 <p class="mt-1 text-xs leading-relaxed text-sky-800 dark:text-sky-200">
                   Print once, update any time. The code never changes, and always shows your latest info.{' '}
@@ -135,10 +177,7 @@ export function Studio(props: Props) {
                   </A>
                 </p>
                 <div class="mt-3">
-                  <a
-                    href={props.loginHref}
-                    class="inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
-                  >
+                  <a href={props.loginHref} class="btn-primary py-2">
                     Sign in to save
                   </a>
                 </div>
@@ -147,8 +186,8 @@ export function Studio(props: Props) {
           </section>
         </Show>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Content</h2>
+        <section class="card p-5">
+          <SectionHeader icon={contentIcon} title="Content" hint="What your QR code points to" />
           <div class="relative">
             <ContentFields
               content={props.draft.content}
@@ -159,10 +198,10 @@ export function Studio(props: Props) {
             />
 
             <Show when={props.contentLocked}>
-              <div class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70 backdrop-blur-[1px] dark:bg-slate-900/70">
+              <div class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60 backdrop-blur-[2px] dark:bg-[#060a13]/60">
                 <button
                   type="button"
-                  class="group flex flex-col items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-4 shadow-md transition hover:border-sky-400 hover:shadow-lg dark:border-slate-600 dark:bg-slate-800"
+                  class="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/90 px-6 py-4 shadow-lg backdrop-blur transition-all hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-[0_12px_32px_-12px_rgb(14_165_233_/_0.4)] dark:border-white/10 dark:bg-white/[0.08] dark:hover:border-sky-500/40"
                   onClick={() => setShowUnlockModal(true)}
                   aria-label="Unlock data editing"
                 >
@@ -173,7 +212,7 @@ export function Studio(props: Props) {
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    class="h-7 w-7 text-slate-600 group-hover:hidden dark:text-slate-300"
+                    class="h-7 w-7 text-slate-500 group-hover:hidden dark:text-slate-300"
                   >
                     <rect x="4" y="11" width="16" height="10" rx="2" />
                     <path d="M8 11V7a4 4 0 0 1 8 0v4" />
@@ -197,20 +236,15 @@ export function Studio(props: Props) {
           </div>
         </section>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+        <section class="card p-5">
           <button
             type="button"
             onClick={() => setStyleOpen(!styleOpen())}
             aria-expanded={styleOpen()}
             aria-controls="style-controls"
-            class="mb-4 flex w-full items-center justify-between text-left"
+            class="mb-1 flex w-full items-center justify-between gap-4 text-left"
           >
-            <span>
-              <span class="block text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Style
-              </span>
-              <span class="mt-0.5 block text-xs text-slate-400 dark:text-slate-500">Colors, shapes, logo</span>
-            </span>
+            <SectionHeader icon={styleIcon} title="Style" hint="Colors, shapes, logo" />
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -218,31 +252,27 @@ export function Studio(props: Props) {
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class={`h-5 w-5 text-slate-400 transition-transform ${styleOpen() ? 'rotate-180' : ''}`}
+              class={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-300 ${styleOpen() ? 'rotate-180' : ''}`}
+              aria-hidden="true"
             >
               <path d="m6 9 6 6 6-6" />
             </svg>
           </button>
 
-          <Show when={styleOpen()}>
-            <div id="style-controls">
+          <div class={`collapsible ${styleOpen() ? 'is-open' : ''}`}>
+            <div id="style-controls" class="pt-3">
               <StyleControls
                 style={props.draft.style}
                 defaultProxyOrigin={resolveProxyOrigin(undefined)}
                 onChange={(style) => props.onChange({ ...props.draft, style })}
               />
             </div>
-          </Show>
+          </div>
         </section>
 
         <Show when={props.onSave && props.kind === 'dynamic'}>
-          <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-            <h2 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Analytics
-            </h2>
-            <p class="mb-4 text-xs text-slate-500 dark:text-slate-400">
-              Counts every visit to this code's page — every scan lands here.
-            </p>
+          <section class="card p-5">
+            <SectionHeader icon={analyticsIcon} title="Analytics" hint="Counts every visit to this code's page" />
 
             <div class="space-y-2.5">
               <RadioItem
@@ -270,18 +300,18 @@ export function Studio(props: Props) {
             </div>
 
             <Show when={trackingSource() === 'global'}>
-              <div class="mt-3 flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+              <div class="mt-3 flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-white/50 px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
                 <span class="text-xs text-slate-600 dark:text-slate-300">
                   {props.globalAnalytics ? trackingConfigSummary(props.globalAnalytics) : 'Global tracking is not configured yet.'}
                 </span>
-                <A href="/settings" class="shrink-0 text-xs font-semibold text-sky-600 hover:underline">
+                <A href="/settings" class="shrink-0 text-xs font-semibold text-sky-600 hover:underline dark:text-sky-400">
                   {props.globalAnalytics ? 'Edit global' : 'Set up global tracking'}
                 </A>
               </div>
             </Show>
 
             <Show when={trackingSource() === 'custom'}>
-              <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+              <div class="mt-3 rounded-xl border border-slate-200/80 bg-white/50 p-3 dark:border-white/10 dark:bg-white/[0.03]">
                 <TrackingConfigFields config={customConfig()} onChange={onCustomConfigChange} />
               </div>
             </Show>
@@ -289,22 +319,25 @@ export function Studio(props: Props) {
         </Show>
       </div>
 
-      <div class="lg:sticky lg:top-6 lg:self-start">
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Preview</h2>
-          <div class="flex justify-center rounded-lg bg-slate-50 p-6 dark:bg-slate-800">
-            <QRPreview
-              data={data()}
-              style={props.draft.style}
-              proxyOrigin={resolveProxyOrigin(undefined)}
-              class="max-w-full"
-              emptyHint={props.emptyHint}
-              onReady={(q) => setQr(q)}
-            />
+      <div class="min-w-0 lg:sticky lg:top-20 lg:self-start">
+        <section class="card p-5">
+          <SectionHeader icon={previewIcon} title="Preview" hint="What scanners will see" />
+
+          <div class="qr-stage mt-4 p-6 sm:p-8">
+            <div class="rounded-xl bg-white p-3 shadow-[0_0_44px_-10px_rgb(14_165_233_/_0.45)] ring-1 ring-slate-900/5 dark:ring-white/10">
+              <QRPreview
+                data={data()}
+                style={props.draft.style}
+                proxyOrigin={resolveProxyOrigin(undefined)}
+                class="max-w-full"
+                emptyHint={props.emptyHint}
+                onReady={(q) => setQr(q)}
+              />
+            </div>
           </div>
 
           <Show when={props.kind === 'dynamic' && data()}>
-            <p class="mt-2 break-all text-center text-xs text-slate-500 dark:text-slate-400">
+            <p class="mt-3 break-all text-center text-xs text-slate-500 dark:text-slate-400">
               QR encodes: <span class="font-mono">{data()}</span>
             </p>
           </Show>
@@ -313,7 +346,7 @@ export function Studio(props: Props) {
             <div class="mt-5">
               <div class="flex items-end gap-2">
                 <div class="flex-1">
-                  <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <label class="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
                     Name
                   </label>
                   <TextInput
@@ -323,11 +356,7 @@ export function Studio(props: Props) {
                     onInput={(e) => props.onNameChange?.(e.currentTarget.value)}
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => props.onGenerateName?.()}
-                  class="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                >
+                <button type="button" onClick={() => props.onGenerateName?.()} class="btn-secondary shrink-0">
                   Generate
                 </button>
               </div>
@@ -340,7 +369,7 @@ export function Studio(props: Props) {
               type="button"
               onClick={() => props.onSave?.()}
               disabled={!data() || props.saving || Boolean(props.nameError)}
-              class="mt-4 w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 dark:bg-slate-700 dark:hover:bg-slate-600"
+              class="btn-primary mt-4 w-full py-3"
             >
               {props.saving ? 'Saving…' : 'Save changes'}
             </button>
@@ -352,29 +381,21 @@ export function Studio(props: Props) {
                 type="button"
                 onClick={() => download('png')}
                 disabled={downloading()}
-                class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 disabled:opacity-60"
+                class="btn-primary"
               >
                 {downloading() ? 'Rendering…' : 'Download PNG'}
               </button>
-              <button
-                type="button"
-                onClick={() => download('svg')}
-                class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
+              <button type="button" onClick={() => download('svg')} class="btn-secondary">
                 Download SVG
               </button>
               <Show when={props.savedUrl}>
-                <button
-                  type="button"
-                  onClick={copyLink}
-                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                >
+                <button type="button" onClick={copyLink} class="btn-secondary">
                   {copied() ? 'Copied!' : 'Copy link'}
                 </button>
               </Show>
             </div>
           </Show>
-        </div>
+        </section>
       </div>
 
       <ConfirmDialog
@@ -392,6 +413,20 @@ export function Studio(props: Props) {
   );
 }
 
+function SectionHeader(props: { icon: JSX.Element; title: string; hint?: string; class?: string }) {
+  return (
+    <div class={`flex items-center gap-2.5 ${props.class ?? ''}`}>
+      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/15 text-sky-600 ring-1 ring-inset ring-sky-500/20 dark:text-sky-400 dark:ring-sky-400/20">
+        {props.icon}
+      </span>
+      <div class="min-w-0">
+        <h2 class="text-sm font-bold text-slate-900 dark:text-white">{props.title}</h2>
+        {props.hint ? <p class="text-xs text-slate-400 dark:text-slate-500">{props.hint}</p> : null}
+      </div>
+    </div>
+  );
+}
+
 function RadioItem(props: {
   checked: boolean;
   label: string;
@@ -401,7 +436,7 @@ function RadioItem(props: {
 }) {
   return (
     <label
-      class={`flex items-start gap-2 text-sm ${props.disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+      class={`flex items-start gap-2.5 text-sm ${props.disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
     >
       <input
         type="radio"
@@ -409,7 +444,7 @@ function RadioItem(props: {
         checked={props.checked}
         disabled={props.disabled}
         onChange={props.onClick}
-        class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-sky-600 focus:ring-sky-500 disabled:opacity-40 dark:border-slate-600 dark:bg-slate-800"
+        class="mt-0.5 h-4 w-4 shrink-0 accent-sky-600 disabled:opacity-40"
       />
       <span>
         <span class="font-medium text-slate-900 dark:text-white">{props.label}</span>

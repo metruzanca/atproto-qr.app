@@ -131,8 +131,8 @@ export function StyleControls(props: {
         />
       </Field>
 
-      <div class="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
-        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Logo</div>
+      <div class="space-y-3 rounded-xl border border-slate-200/80 bg-white/50 p-3 backdrop-blur dark:border-white/10 dark:bg-white/[0.03]">
+        <div class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Logo</div>
         <Field label="Image (optional)">
           <TextInput
             placeholder="https://… or upload below"
@@ -141,7 +141,7 @@ export function StyleControls(props: {
           />
         </Field>
         <div class="flex items-center gap-2">
-          <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">
+          <label class="btn-secondary cursor-pointer px-3 py-1.5 text-xs">
             Upload image
             <input
               type="file"
@@ -160,14 +160,14 @@ export function StyleControls(props: {
             <button
               type="button"
               onClick={() => set({ image: null, imageProxy: false, imageProxyUrl: undefined })}
-              class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+              class="btn-ghost text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400"
             >
               Remove
             </button>
           </Show>
         </div>
       <Show when={needsProxy()}>
-        <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+        <div class="rounded-xl border border-amber-200/80 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-800 backdrop-blur dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
           <p>
             This image host blocks direct loading into a QR canvas. Route it through an image proxy so it renders
             (and so downloads still work)?
@@ -175,14 +175,14 @@ export function StyleControls(props: {
           <button
             type="button"
             onClick={() => set({ imageProxy: true })}
-            class="mt-2 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-700"
+            class="btn-primary mt-2 px-3 py-1.5 text-xs"
           >
             Use image proxy
           </button>
         </div>
       </Show>
       <Show when={s().imageProxy && s().image}>
-        <div class="space-y-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800">
+        <div class="space-y-2.5 rounded-xl border border-slate-200/80 bg-white/60 px-3 py-2.5 backdrop-blur dark:border-white/10 dark:bg-white/[0.05]">
           <p class="text-xs font-medium text-slate-700 dark:text-slate-200">How should the logo be loaded?</p>
           <label class="flex cursor-pointer items-start gap-2 text-sm">
             <input
@@ -190,7 +190,7 @@ export function StyleControls(props: {
               name="logo-proxy"
               checked={s().imageProxyUrl === undefined}
               onChange={() => set({ imageProxyUrl: undefined })}
-              class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-sky-600 focus:ring-sky-500 dark:border-slate-600 dark:bg-slate-800"
+              class="mt-0.5 h-4 w-4 shrink-0 accent-sky-600"
             />
             <span>
               <span class="font-medium text-slate-900 dark:text-white">Default proxy</span>
@@ -205,7 +205,7 @@ export function StyleControls(props: {
               name="logo-proxy"
               checked={s().imageProxyUrl !== undefined}
               onChange={() => set({ imageProxyUrl: '' })}
-              class="mt-0.5 h-4 w-4 shrink-0 border-slate-300 text-sky-600 focus:ring-sky-500 dark:border-slate-600 dark:bg-slate-800"
+              class="mt-0.5 h-4 w-4 shrink-0 accent-sky-600"
             />
             <span class="min-w-0 flex-1">
               <span class="block font-medium text-slate-900 dark:text-white">Custom proxy</span>

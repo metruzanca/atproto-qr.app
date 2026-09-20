@@ -246,25 +246,25 @@ export default function Editor() {
   return (
     <main class="mx-auto max-w-6xl px-4 py-8">
       <Show when={status() === 'loading'}>
-        <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-500" />
+        <div class="spinner" />
       </Show>
 
       <Show when={status() === 'forbidden'}>
-        <div class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+        <div class="card p-10 text-center">
           <h1 class="text-xl font-bold text-slate-900 dark:text-white">This isn't your QR code</h1>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
             Only the owner of {params.handle} can edit this code.
           </p>
-          <a href="/login" class="mt-4 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white">
+          <a href="/login" class="btn-primary mt-4 inline-block">
             Sign in
           </a>
         </div>
       </Show>
 
       <Show when={status() === 'notfound'}>
-        <div class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+        <div class="card p-10 text-center">
           <h1 class="text-xl font-bold text-slate-900 dark:text-white">QR code not found</h1>
-          <A href="/" class="mt-4 inline-block text-sm font-semibold text-sky-600">Go to the studio</A>
+          <A href="/" class="mt-4 inline-block text-sm font-semibold text-sky-600 dark:text-sky-400">Go to the studio</A>
         </div>
       </Show>
 
@@ -273,20 +273,20 @@ export default function Editor() {
           <>
             <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                   Editing · {contentTitle(d().content)}
                 </p>
-                <h1 class="flex items-center gap-2 truncate text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 class="mt-1 flex flex-wrap items-center gap-2 truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                   {params.handle}/{params.id}
                   <Show when={mode() === 'redirect'}>
-                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                    <span class="badge bg-amber-500/15 text-amber-700 dark:text-amber-300">
                       Redirect
                     </span>
                   </Show>
                   <Show when={mode() === 'qr'}>
                     <span
-                      class={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                        kind() === 'dynamic' ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      class={`badge ${
+                        kind() === 'dynamic' ? 'bg-violet-500/15 text-violet-700 dark:text-violet-300' : 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
                       }`}
                     >
                       {kind()}
@@ -294,11 +294,12 @@ export default function Editor() {
                   </Show>
                 </h1>
               </div>
-              <button
-                type="button"
-                onClick={remove}
-                class="rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50 dark:border-red-500/30 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
-              >
+              <button type="button" onClick={remove} class="btn-danger shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
                 Delete
               </button>
             </div>
@@ -308,7 +309,7 @@ export default function Editor() {
             </Show>
 
             <Show when={mode() === 'redirect' && redirectTarget()}>
-              <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+              <div class="mb-4 rounded-xl border border-amber-200/80 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 backdrop-blur dark:border-amber-500/30 dark:text-amber-200">
                 This name is currently a <span class="font-semibold">redirect</span> to{' '}
                 <span class="font-mono">{redirectTarget()}</span> — it keeps an older printed URL working. Fill in the
                 details below and save to turn it back into a QR code.

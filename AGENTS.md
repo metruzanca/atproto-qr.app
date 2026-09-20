@@ -12,6 +12,8 @@ atproto-qr.app — a QR code generator with atproto-backed editable codes. Pure 
 - Vite + **SolidJS** (solid-js 1.9) + Tailwind CSS 4, TypeScript (strict), `@solidjs/router` 1.0 (data router).
 - atproto via atcute: `@atcute/oauth-browser-client` (OAuth 2.1, PKCE+DPoP+PAR, public client), `@atcute/client` (XRPC), `@atcute/identity-resolver` (handle→DID→PDS), `@atcute/atproto`/`@atcute/bluesky` (lexicons), `@atcute/lexicons`.
 - QR rendering: `@liquid-js/qr-code-styling` (maintained fork of qr-code-styling; `QRCodeStyling`, `browserUtils.download`).
+- Fonts: Geist Sans + Geist Mono, self-hosted via Fontsource (`@fontsource-variable/geist`, `@fontsource-variable/geist-mono`), imported in `src/index.tsx` — no third-party font requests.
+- Design system ("Glacier Blue", `src/index.css`): Tailwind v4 `@theme` tokens (`--font-sans`/`--font-mono`, `--animate-*` keyframes) + `@layer components` classes: `.card`/`.card-hover` (frosted), `.btn-primary`/`.btn-secondary`/`.btn-danger`/`.btn-ghost`, `.badge`, `.section-label`, `.text-gradient`, `.hairline`, `.qr-stage` (dotted-grid QR backdrop), `.bg-mesh` (fixed gradient decoration), `.reveal`/`.is-visible` (scroll-reveal), `.collapsible` (grid-rows expand/collapse), `.spinner`. All animation is disabled under `prefers-reduced-motion`.
 - Package manager: **pnpm 11**.
 
 ## Commands
@@ -25,7 +27,7 @@ pnpm exec tsc --noEmit   # typecheck (there is no lint script)
 
 ## Routes
 
-- `/` — Studio (Home): the generator; when signed in shows a Code type (Fixed/Dynamic) selector. Name field + Generate + "Save changes" appear for both kinds when signed in (creates a record, then navigates to `/edit`). In Fixed mode only dirty draft fields (content type `t=` + non-default content fields + non-default style fields, by form input name) are written to the URL query params (`draftToParams`/`draftFromParams` in `src/lib/qr/record.ts`) so the state survives reloads, history, and bookmarks; Dynamic mode stops syncing and the params clear naturally on save.
+- `/` — Studio (Home): the generator; when signed in shows a Code type (Fixed/Dynamic) selector. Name field + Generate + "Save changes" appear for both kinds when signed in (creates a record, then navigates to `/edit`). In Fixed mode only dirty draft fields (content type `t=` + non-default content fields + non-default style fields, by form input name) are written to the URL query params (`draftToParams`/`draftFromParams` in `src/lib/qr/record.ts`) so the state survives reloads, history, and bookmarks; Dynamic mode stops syncing and the params clear naturally on save. Hero + Studio sit in a `min-h-[calc(100svh-6.5rem)]` fold wrapper, so the UsageGuide (`id="ideas"`, `scroll-mt-20`) always starts below the first screen.
 - `/login`, `/oauth/callback` — OAuth flow.
 - `/codes` — list the user's saved QR records (was `/mine`).
 - `/:handle/:id` — public page: URL-type instantly redirects to the data target; other types render the styled QR (dynamic codes render their stored `qrValue`, i.e. the app URL). Follows redirect records.
@@ -55,6 +57,7 @@ Rename flow (`src/pages/Editor.tsx`): validate name unique → `com.atproto.repo
 - `src/lib/qr/record.ts` — `QRRecord`/`Draft` types, `makeRecord`, `isValidRecord`, `qrValueFor(record, fallback, ctx?)` (effective QR payload: dynamic → `qrValue`, else `contentToValue`).
 - `src/lib/qr/style.ts` — serializable `QRStyle` ↔ qr-code-styling options (`styleToOptions`). `imageProxy` (boolean, legacy-compatible) + optional `imageProxyUrl` (per-code custom proxy origin; absent = "default" proxy, resolved from the owner's global setting at render, then weserv.nl).
 - `src/components/Studio.tsx` — shared generator (kind selector, content + style + preview + download + optional name/save block; `qrData` prop drives the encoded payload, name/save shown for both kinds; `contentLocked` overlays the data form with a padlock that unlocks via `ConfirmDialog`).
+- `src/components/Reveal.tsx` — IntersectionObserver scroll-reveal wrapper; adds `.is-visible` to `.reveal` when the element enters the viewport (applied to UsageGuide sections and cards).
 - `src/lib/qr/name.ts` — slug validation, adjective/animal word lists, `generateCodeName`.
 - `src/lib/qr/tracking.ts` — `TrackingConfig`/`QRCodeTracking` types + validation, `parseGtagId`, `fireTracking` (GA4 gtag/MP, Plausible, Umami, Matomo beacons, fire-once guard), and the `globalAnalytics` signal + `saveGlobalAnalytics` (settings-record read-modify-write).
 - `src/lib/qr/imageProxy.ts` — global image-proxy settings: `globalImageProxyUrl` signal + `resolveProxyOrigin` (per-code URL → global → weserv.nl) + `saveGlobalImageProxy` (settings-record read-modify-write).
@@ -64,6 +67,7 @@ Rename flow (`src/pages/Editor.tsx`): validate name unique → `com.atproto.repo
 ## Critical gotchas
 
 - **Solid, not React.** Never destructure props (`const { x } = props`) — it snapshots the value and breaks reactivity. Always read `props.x` in JSX or via `() => props.x`. Use `<Show>`/`For`. UI bugs from this have happened before (content-type tabs, style controls).
+- **Never clear Solid-managed DOM with `textContent=''`.** It wipes the Solid-rendered nodes inside. `QRPreview` keeps its empty state as a **sibling** of the QR container, so wiping the container (to drop a stale QR) can't clobber the empty state.
 - **pnpm 11**: build-script approval lives in `pnpm-workspace.yaml` under `allowBuilds` (`@tailwindcss/oxide`, `esbuild`). The old `pnpm.onlyBuiltDependencies` is ignored. Don't remove `allowBuilds` or installs fail with `ERR_PNPM_IGNORED_BUILDS`.
 - **PDS rejects floats in records** (unknown-collection validator accepts only integer numbers). `style.imageSize` is stored as an integer percent (40 = 40%), converted to a 0–1 coefficient in `styleToOptions` (also tolerates legacy 0.4 values). Never put float fields in records.
 - **`@atcute/oauth-browser-client` is patched** (`patches/`, registered in `pnpm-workspace.yaml` under `patchedDependencies`). The patch makes DPoP nonce retry detect `use_dpop_nonce` from the JSON body, because browsers can't read `WWW-Authenticate` over CORS. If you bump this package, re-apply/re-test the patch.

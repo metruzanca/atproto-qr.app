@@ -3,7 +3,7 @@ import type { JSX } from 'solid-js';
 
 function CodeBlock(props: { children: JSX.Element }) {
   return (
-    <pre class="mt-2 overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs leading-relaxed text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+    <pre class="mt-2 overflow-x-auto rounded-xl border border-slate-200/80 bg-white/60 px-4 py-3 font-mono text-xs leading-relaxed text-slate-800 backdrop-blur dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200">
       {props.children}
     </pre>
   );
@@ -32,16 +32,16 @@ function NSID(props: { nsid: string; href?: string }) {
 
 function Table(props: { head: string[]; children: JSX.Element }) {
   return (
-    <div class="mt-3 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+    <div class="mt-3 overflow-x-auto rounded-xl border border-slate-200/80 dark:border-white/10">
       <table class="w-full border-collapse text-left text-sm">
         <thead>
-          <tr class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+          <tr class="border-b border-slate-200/80 bg-white/60 dark:border-white/10 dark:bg-white/[0.04]">
             {props.head.map((h) => (
-              <th class="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{h}</th>
+              <th class="px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-700/60 dark:bg-slate-900">{props.children}</tbody>
+        <tbody class="divide-y divide-slate-200/80 bg-white/60 backdrop-blur dark:divide-white/[0.06] dark:bg-white/[0.02]">{props.children}</tbody>
       </table>
     </div>
   );
@@ -340,7 +340,7 @@ export default function Lexicons() {
         </Table>
       </section>
 
-      <section class="mt-12 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
+      <section class="card mt-12 p-6">
         <P>
           Every record above is public and queryable from your PDS at any time — that's the trade that keeps this
           free. You can browse them with a tool like{' '}
