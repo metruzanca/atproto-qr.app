@@ -315,12 +315,13 @@ function FileField(props: {
   fields: FieldMap;
   disabled?: boolean;
   onUploadFile?: (file: File) => Promise<UploadedFile>;
+  onFileUploaded?: () => void;
   loginHref?: string;
   onChange: (patch: Record<string, unknown>) => void;
 }) {
   const [uploading, setUploading] = createSignal(false);
   const [error, setError] = createSignal('');
-  const hasFile = Boolean(props.fields.blob as BlobRef | null | undefined);
+  const hasFile = () => Boolean(props.fields.blob as BlobRef | null | undefined);
 
   const handleFile = async (file: File) => {
     if (file.size > MAX_FILE_SIZE) {
@@ -341,6 +342,7 @@ function FileField(props: {
         size: uploaded.size,
         blob: uploaded.blob,
       });
+      props.onFileUploaded?.();
     } catch {
       setError('Upload failed. Please try again.');
     } finally {
@@ -361,7 +363,7 @@ function FileField(props: {
 
       <Show when={props.onUploadFile}>
         <Show
-          when={hasFile}
+          when={hasFile()}
           fallback={
             <input
               type="file"
@@ -426,6 +428,7 @@ export function ContentFields(props: {
   onChange: (content: Content) => void;
   disabled?: boolean;
   onUploadFile?: (file: File) => Promise<UploadedFile>;
+  onFileUploaded?: () => void;
   loginHref?: string;
 }) {
   const getFields = () => props.content.fields;
@@ -473,6 +476,7 @@ export function ContentFields(props: {
           fields={getFields()}
           disabled={props.disabled}
           onUploadFile={props.onUploadFile}
+          onFileUploaded={props.onFileUploaded}
           loginHref={props.loginHref}
           onChange={setFields}
         />

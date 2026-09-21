@@ -326,6 +326,9 @@ export default function Editor() {
               qrData={qrData()}
               savedUrl={publicUrl()}
               onUploadFile={onUploadFile}
+              onFileUploaded={() => {
+                if (!saving()) void save();
+              }}
               onSave={save}
               saving={saving()}
               name={name()}

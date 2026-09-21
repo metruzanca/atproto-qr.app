@@ -26,6 +26,7 @@ interface Props {
   emptyHint?: string;
   loginHref?: string;
   onUploadFile?: (file: File) => Promise<UploadedFile>;
+  onFileUploaded?: () => void;
   onQRReady?: (qr: QRCodeStyling) => void;
   onSave?: () => Promise<void> | void;
   saving?: boolean;
@@ -193,6 +194,7 @@ export function Studio(props: Props) {
               content={props.draft.content}
               disabled={props.contentLocked}
               onUploadFile={props.onUploadFile}
+              onFileUploaded={props.onFileUploaded}
               loginHref={props.loginHref}
               onChange={(content) => props.onChange({ ...props.draft, content })}
             />
