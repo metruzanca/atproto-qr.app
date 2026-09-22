@@ -32,7 +32,11 @@ export function Select(props: JSX.SelectHTMLAttributes<HTMLSelectElement> & { op
     <div class="relative">
       <select {...rest} value={local.value} class={`${inputClass} appearance-none pr-9 ${local.class ?? ''}`}>
         {local.options.map((o) => (
-          <option value={o.value} selected={o.value === local.value}>
+          <option
+            value={o.value}
+            selected={o.value === local.value}
+            class="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+          >
             {o.label}
           </option>
         ))}
