@@ -49,7 +49,7 @@ export default function Editor() {
   const qrData = () => {
     const d = draft();
     if (!d) return '';
-    if (kind() === 'dynamic') {
+    if (kind() === 'dynamic' || d.content.type === 'file') {
       return existing()?.qrValue ?? publicUrl();
     }
     const a = agent();
@@ -159,8 +159,10 @@ export default function Editor() {
       const buildRecord = (): QRRecord => {
         const record = makeRecord(d, existing() ?? undefined);
         record.kind = kind();
-        if (kind() === 'dynamic') {
+        if (kind() === 'dynamic' || c.type === 'file') {
           record.qrValue = codeUrl(p.handle, v);
+        }
+        if (kind() === 'dynamic') {
           record.tracking = tracking();
         }
         return record;

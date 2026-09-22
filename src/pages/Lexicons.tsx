@@ -190,8 +190,10 @@ export default function Lexicons() {
         <P>
           The <code class="font-mono">file</code> type stores an atproto{' '}
           <code class="font-mono">BlobRef</code> — <code class="font-mono">{'{ $type: "blob", ref: { $link }, mimeType, size }'}</code> —
-          uploaded to your PDS with <code class="font-mono">com.atproto.repo.uploadBlob</code>. Its QR payload (a{' '}
-          <code class="font-mono">com.atproto.sync.getBlob</code> URL) is recomputed at render, never stored.
+          uploaded to your PDS with <code class="font-mono">com.atproto.repo.uploadBlob</code>. The QR encodes the
+          code's page URL (snapshotted into <code class="font-mono">qrValue</code>; the page serves the file as a{' '}
+          <code class="font-mono">com.atproto.sync.getBlob</code> URL under its original filename, recomputed at render,
+          never stored).
         </P>
 
         <h4 class="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">style</h4>

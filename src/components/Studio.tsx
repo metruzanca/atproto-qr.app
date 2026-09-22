@@ -338,7 +338,7 @@ export function Studio(props: Props) {
             </div>
           </div>
 
-          <Show when={props.kind === 'dynamic' && data()}>
+          <Show when={(props.kind === 'dynamic' || props.draft.content.type === 'file') && data()}>
             <p class="mt-3 break-all text-center text-xs text-slate-500 dark:text-slate-400">
               QR encodes: <span class="font-mono">{data()}</span>
             </p>

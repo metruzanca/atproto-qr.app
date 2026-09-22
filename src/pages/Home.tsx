@@ -75,7 +75,8 @@ export default function Home() {
   const qrData = () => {
     const handle = profile()?.handle;
     const v = name().trim();
-    if (kind() === 'dynamic') {
+    const c = draft().content;
+    if (kind() === 'dynamic' || c.type === 'file') {
       return handle && isValidSlug(v) ? codeUrl(handle, v) : '';
     }
     const a = agent();
@@ -105,8 +106,10 @@ export default function Home() {
     try {
       const record = makeRecord(draft());
       record.kind = kind();
-      if (kind() === 'dynamic') {
+      if (kind() === 'dynamic' || c.type === 'file') {
         record.qrValue = qrData();
+      }
+      if (kind() === 'dynamic') {
         record.tracking = tracking();
       }
       await createQRRecord(authedClient(a), p.did, v, record);

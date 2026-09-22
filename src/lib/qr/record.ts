@@ -42,6 +42,9 @@ export function qrValueFor(record: QRRecord, fallback?: string, ctx?: ContentCon
   if (record.kind === 'dynamic') {
     return record.qrValue ?? fallback ?? '';
   }
+  if (record.content.type === 'file' && record.qrValue) {
+    return record.qrValue;
+  }
   return contentToValue(record.content, ctx);
 }
 

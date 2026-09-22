@@ -49,6 +49,28 @@ export default function QRPublic() {
     }
   };
 
+  const canOpenInline = (mimeType: string) =>
+    /^(image\/|video\/|audio\/|text\/)|application\/pdf$/.test(mimeType);
+
+  const openFile = async (f: { name: string; mimeType: string; blobUrl: string }) => {
+    if (!f.blobUrl) return;
+    if (!canOpenInline(f.mimeType)) {
+      await downloadFile(f);
+      return;
+    }
+    const win = window.open('', '_blank');
+    try {
+      const res = await fetch(f.blobUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (win) win.location.href = url;
+      else window.location.href = url;
+    } catch {
+      if (win) win.location.href = f.blobUrl;
+      else window.location.href = f.blobUrl;
+    }
+  };
+
   createEffect(async () => {
     const handle = params.handle;
     const id = params.id;
@@ -186,14 +208,9 @@ export default function QRPublic() {
                     <button type="button" onClick={() => downloadFile(f())} class="btn-primary py-2">
                       Download
                     </button>
-                    <a
-                      href={f().blobUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="btn-secondary"
-                    >
+                    <button type="button" onClick={() => openFile(f())} class="btn-secondary">
                       Open
-                    </a>
+                    </button>
                   </div>
                 </div>
                 <Show when={f().mimeType.startsWith('image/') && f().blobUrl}>

@@ -228,8 +228,8 @@ export default function About() {
             <p>
               Yes — the <span class="font-semibold text-slate-700 dark:text-slate-200">file</span> content type lets you attach a single
               file (up to 5 MB). The file is uploaded as an atproto blob to your own PDS, and the QR encodes a link
-              straight to that blob, so scanning it downloads the file. As with everything here, the bytes live on
-              your server — this site never touches them.
+              to the code's page here, which serves the file under its original filename. As with everything here, the
+              bytes live on your server — this site never touches them.
             </p>
           </Disclosure>
           <Disclosure summary="What if my PDS is unreachable?">
