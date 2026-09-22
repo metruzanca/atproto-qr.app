@@ -218,13 +218,6 @@ export default function QRPublic() {
                     <img src={f().blobUrl} alt={f().name} class="max-h-96 max-w-full object-contain" />
                   </div>
                 </Show>
-                <Show when={f().mimeType === 'application/pdf' && f().blobUrl}>
-                  <iframe
-                    src={f().blobUrl}
-                    title={f().name}
-                    class="mt-4 h-96 w-full rounded-xl border border-slate-200/80 bg-white/50 dark:border-white/10 dark:bg-white/[0.03]"
-                  />
-                </Show>
               </div>
             )}
           </Show>
