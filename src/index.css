@@ -109,6 +109,31 @@ html.dark {
   scrollbar-color: rgb(148 163 184 / 0.3) transparent;
 }
 
+select {
+  color-scheme: light;
+}
+
+html.dark select {
+  color-scheme: dark;
+  background-color: #0f172a;
+}
+
+html.dark select:hover,
+html.dark select:focus {
+  background-color: #16203a;
+}
+
+html.dark select option,
+html.dark select optgroup {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark select option:checked {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
 body {
   @apply font-sans text-slate-800 antialiased dark:text-slate-200;
 }
