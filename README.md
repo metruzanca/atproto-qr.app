@@ -63,11 +63,14 @@ The app is fully static — `dist/` runs on any static host, and the repo ships 
 
 | Env var               | Required | Description                                                                                                  |
 | --------------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| `VITE_PUBLIC_ORIGIN`  | yes      | Public origin of your instance (no trailing slash). Build-time; generates the OAuth client metadata + redirect URI, so it must match the URL people visit. |
+| `VITE_DOMAIN`         | yes      | Where the app is served — `https://qr.example.com` or a bare `qr.example.com`. Build-time; generates the OAuth client metadata + redirect URI and is the base of every code link, so previews and QR codes get the real domain instead of `127.0.0.1`. |
+| `VITE_OWNER_HANDLE`   | no       | Personal-instance mode: pin the deployment to this handle and serve its codes from `{domain}/#name`.          |
 | `PORT`                | no       | Host port to publish Caddy on (default `8080`).                                                                |
 | `DOMAIN`              | no       | Your domain, e.g. `qrs.example.com`, to let Caddy manage TLS automatically. Unset = plain HTTP.                 |
 
-`VITE_PUBLIC_ORIGIN` is baked in at build time, so changing it requires a rebuild.
+These are baked in at build time, so changing them requires a rebuild.
+
+Set `VITE_OWNER_HANDLE` to run your own single-owner instance on a short domain — e.g. `qr.yourname.dev/#gg27` instead of `qr.yourname.dev/you.example.com/gg27`. The handle stays in the env var, links stay short, and the records still live in your PDS. See [the self-hosting notes](selfhost/README.md#personal-instance-mode) for the details and tradeoffs.
 
 ### CORS image proxy for logos
 

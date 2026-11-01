@@ -1,7 +1,8 @@
-import { onMount, type JSX } from 'solid-js';
-import { Route, Router } from '@solidjs/router';
+import { createEffect, onCleanup, onMount, Show, type JSX } from 'solid-js';
+import { Route, Router, useLocation } from '@solidjs/router';
 
 import { initAuth } from './lib/atproto/auth';
+import { hashTarget, OWNER_HANDLE, PERSONAL_MODE, syncHashTarget } from './lib/personal';
 import { Header } from './components/Header';
 import { ToastContainer } from './components/Toast';
 import Home from './pages/Home';
@@ -13,8 +14,22 @@ import Editor from './pages/Editor';
 import About from './pages/About';
 import Settings from './pages/Settings';
 import Lexicons from './pages/Lexicons';
+import NotFound from './pages/NotFound';
 
 function Root(props: { children?: JSX.Element }) {
+  const location = useLocation();
+
+  // Personal instances serve codes from the hash of `/` (`/#name`), so the
+  // router's path never changes when moving between codes. Re-read the hash on
+  // router navigations and on native hash changes (address-bar edits).
+  createEffect(() => {
+    location.pathname;
+    location.hash;
+    syncHashTarget();
+  });
+  onMount(() => window.addEventListener('hashchange', syncHashTarget));
+  onCleanup(() => window.removeEventListener('hashchange', syncHashTarget));
+
   return (
     <div class="flex min-h-screen flex-col bg-[#f4f7fc] text-slate-900 dark:bg-[#060a13] dark:text-slate-100">
       <div class="bg-mesh" aria-hidden="true" />
@@ -24,7 +39,7 @@ function Root(props: { children?: JSX.Element }) {
       <footer class="hairline mt-16">
         <div class="mx-auto max-w-6xl space-y-1.5 px-4 py-5 text-center text-xs text-slate-500 dark:text-slate-400">
           <p>
-            Your QR codes are stored on your own Bluesky account — we can't edit, hide, or delete them.
+            Your QR codes are stored on your own Bluesky account. We can't edit, hide, or delete them.
           </p>
           <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <span>
@@ -80,6 +95,24 @@ function Root(props: { children?: JSX.Element }) {
   );
 }
 
+/**
+ * `/` normally renders the studio. On a personal instance, a `#name` or
+ * `#name/edit` hash swaps in the public page or editor for that code.
+ */
+function HomeRoute() {
+  return (
+    <Show when={hashTarget()} keyed fallback={<Home />}>
+      {(target) =>
+        target.edit ? (
+          <Editor code={{ handle: OWNER_HANDLE, id: target.id }} />
+        ) : (
+          <QRPublic code={{ handle: OWNER_HANDLE, id: target.id }} />
+        )
+      }
+    </Show>
+  );
+}
+
 const App = () => {
   onMount(() => {
     void initAuth();
@@ -87,15 +120,17 @@ const App = () => {
 
   return (
     <Router root={Root}>
-      <Route path="/" component={Home} />
+      <Route path="/" component={HomeRoute} />
       <Route path="/login" component={Login} />
       <Route path="/oauth/callback" component={Callback} />
       <Route path="/codes" component={Mine} />
       <Route path="/about" component={About} />
       <Route path="/lexicons" component={Lexicons} />
       <Route path="/settings" component={Settings} />
-      <Route path="/:handle/:id" component={QRPublic} />
-      <Route path="/:handle/:id/edit" component={Editor} />
+      {/* Personal instances only serve the owner's codes, and only from `/#name`. */}
+      <Route path="/:handle/:id" component={PERSONAL_MODE ? NotFound : QRPublic} />
+      <Route path="/:handle/:id/edit" component={PERSONAL_MODE ? NotFound : Editor} />
+      <Route path="*" component={NotFound} />
     </Router>
   );
 };

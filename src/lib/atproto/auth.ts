@@ -21,10 +21,14 @@ import type { ActorIdentifier, Did } from '@atcute/lexicons';
 import type {} from '@atcute/atproto';
 import type {} from '@atcute/bluesky';
 
+import { normalizeOrigin } from '../appOrigin';
+
 export const SCOPE = 'atproto transition:generic';
 
 const DEV_REDIRECT_URI = 'http://127.0.0.1:3000/oauth/callback';
-const PUBLIC_ORIGIN = (import.meta.env.VITE_PUBLIC_ORIGIN ?? '').replace(/\/$/, '');
+// `VITE_DOMAIN` is where the deployment lives; the OAuth client_id and redirect
+// URI are derived from it, so it must match the URL people actually visit.
+const PUBLIC_ORIGIN = normalizeOrigin(import.meta.env.VITE_DOMAIN);
 
 export const CLIENT_ID = import.meta.env.DEV
   ? `http://localhost?redirect_uri=${encodeURIComponent(DEV_REDIRECT_URI)}&scope=${encodeURIComponent(SCOPE)}`

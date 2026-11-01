@@ -4,7 +4,8 @@ services:
       context: ..
       dockerfile: selfhost/Dockerfile
       args:
-        VITE_PUBLIC_ORIGIN: ${VITE_PUBLIC_ORIGIN:?set VITE_PUBLIC_ORIGIN in selfhost/.env}
+        VITE_DOMAIN: ${VITE_DOMAIN:?set VITE_DOMAIN in selfhost/.env}
+        VITE_OWNER_HANDLE: ${VITE_OWNER_HANDLE:-}
     ports:
       - '${PORT:-8080}:80'
     restart: unless-stopped

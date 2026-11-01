@@ -13,6 +13,7 @@ import {
   type RedirectItem,
 } from '../lib/atproto/records';
 import type { QRStyle } from '../lib/qr/style';
+import { codePath } from '../lib/personal';
 import { codeUrl } from '../lib/qr/content';
 import { qrValueFor, type QRRecord } from '../lib/qr/record';
 
@@ -175,7 +176,7 @@ function renderQR(
   entry: Entry & { kind: 'qr' },
   onDelete: (rkey: string, aliases: string[] | undefined) => Promise<void>,
 ) {
-  const url = `/${p.handle}/${entry.rkey}`;
+  const url = codePath(p.handle, entry.rkey);
   const kind = entry.record.kind ?? 'fixed';
   const payload = qrValueFor(entry.record, codeUrl(p.handle, entry.rkey), { pdsUrl: p.pdsUrl, did: p.did });
   const subtitle =
@@ -223,7 +224,7 @@ function renderQR(
         <A href={url} target="_blank" class="btn-ghost">
           View
         </A>
-        {kind === 'dynamic' && <CopyLinkButton url={`${location.origin}${url}`} />}
+        {kind === 'dynamic' && <CopyLinkButton url={codeUrl(p.handle, entry.rkey)} />}
         <A href={`${url}/edit`} class="btn-ghost text-sky-600 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-400">
           Edit
         </A>
@@ -244,7 +245,7 @@ function renderRedirect(
   entry: Entry & { kind: 'redirect' },
   onDelete: (rkey: string) => Promise<void>,
 ) {
-  const url = `/${p.handle}/${entry.rkey}`;
+  const url = codePath(p.handle, entry.rkey);
   return (
     <li class="card flex items-center gap-4 p-3">
       <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-amber-200/70 bg-amber-500/10 text-amber-500 dark:border-amber-500/30 dark:text-amber-300">

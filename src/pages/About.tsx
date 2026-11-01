@@ -2,6 +2,8 @@ import { Show, type JSX } from 'solid-js';
 import { A } from '@solidjs/router';
 
 import { agent, profile } from '../lib/atproto/auth';
+import { APP_ORIGIN } from '../lib/appOrigin';
+import { PERSONAL_MODE } from '../lib/personal';
 
 function Disclosure(props: { summary: string; children: JSX.Element }) {
   return (
@@ -180,7 +182,11 @@ export default function About() {
               Your records would be safe, but the friendly links would not. The data itself lives on your PDS, not
               here — it's never lost, and because atproto is portable it can be read back with any client or a re-hosted
               copy of this app. However, a link like{' '}
-              <span class="font-mono">{import.meta.env.VITE_PUBLIC_ORIGIN}/you/name</span> only works while someone is serving this app at
+              <span class="font-mono">
+                {APP_ORIGIN}
+                {PERSONAL_MODE ? '/#name' : '/you/name'}
+              </span>{' '}
+              only works while someone is serving this app at
               that address. If this site disappeared, those exact URLs would stop resolving even though your codes
               remain intact and fully portable.
             </p>
@@ -191,8 +197,15 @@ export default function About() {
               soon, but the whole app is static files you can deploy anywhere for free (Vercel, Netlify, Cloudflare
               Pages, and so on). No custom domain is needed, and you can sign in with your own Bluesky handle — e.g.{' '}
               <span class="font-mono">@cmgriffing.bsky.social</span>. The app derives its OAuth client ID and redirect
-              URL from a single environment variable (<span class="font-mono">VITE_PUBLIC_ORIGIN</span>), so a
+              URL from a single environment variable (<span class="font-mono">VITE_DOMAIN</span>), so a
               self-hosted copy works on its own URL out of the box.
+            </p>
+            <p class="mt-3">
+              You can also run it as a <span class="font-semibold">personal instance</span> pinned to one account by
+              setting <span class="font-mono">VITE_OWNER_HANDLE</span>. Every code then gets a short link under your
+              own domain — <span class="font-mono">qr.example.com/#name</span> instead of{' '}
+              <span class="font-mono">qr.example.com/you/name</span> — while the records still live in your PDS and
+              remain readable from any other copy of the app.
             </p>
           </Disclosure>
           <Disclosure summary="What is a PDS?">

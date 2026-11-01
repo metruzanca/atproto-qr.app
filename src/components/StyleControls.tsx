@@ -115,7 +115,7 @@ export function StyleControls(props: {
           onChange={(e) => set({ errorCorrectionLevel: e.currentTarget.value as QRStyle['errorCorrectionLevel'] })}
           options={ERROR_CORRECTION_LEVELS.map((v) => ({
             value: v,
-            label: v === 'L' ? 'L — low (7%)' : v === 'M' ? 'M — medium (15%)' : v === 'Q' ? 'Q — quartile (25%)' : 'H — high (30%)',
+            label: v === 'L' ? 'L: low (7%)' : v === 'M' ? 'M: medium (15%)' : v === 'Q' ? 'Q: quartile (25%)' : 'H: high (30%)',
           }))}
         />
       </Field>

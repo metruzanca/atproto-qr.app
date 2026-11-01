@@ -1,7 +1,8 @@
 import { createEffect, createSignal, For, onCleanup, Show } from 'solid-js';
 import { isHandle } from '@atcute/lexicons/syntax';
 
-import { profile, searchActors, signIn } from '../lib/atproto/auth';
+import { profile, authReady, searchActors, signIn } from '../lib/atproto/auth';
+import { HANDOFF_ORIGIN, OWNER_HANDLE, PERSONAL_MODE } from '../lib/personal';
 import { Field, TextInput } from '../components/ui';
 
 interface Suggestion {
@@ -10,8 +11,14 @@ interface Suggestion {
   avatar: string | null;
 }
 
+/** `?handle=` lets a personal instance hand the visitor over with the field prefilled. */
+function initialHandle(): string {
+  if (PERSONAL_MODE) return OWNER_HANDLE;
+  return new URLSearchParams(location.search).get('handle') ?? '';
+}
+
 export default function Login() {
-  const [handle, setHandle] = createSignal('');
+  const [handle, setHandle] = createSignal(initialHandle());
   const [error, setError] = createSignal('');
   const [busy, setBusy] = createSignal(false);
   const [suggestions, setSuggestions] = createSignal<Suggestion[]>([]);
@@ -82,11 +89,12 @@ export default function Login() {
     }
   };
 
-  const submit = async (e: SubmitEvent) => {
-    e.preventDefault();
-    const value = handle().trim();
-    if (!isHandle(value)) {
-      setError('That does not look like a valid handle. Try e.g. alice.bsky.social');
+  /** Starts OAuth for `value`. Shared by the form and the cross-instance hand-off. */
+  const startSignIn = async (value: string) => {
+    // A personal instance belongs to one account. Everyone else continues on the
+    // shared deployment, which is the same app with the same records behind it.
+    if (HANDOFF_ORIGIN && value.toLowerCase() !== OWNER_HANDLE) {
+      window.location.assign(`${HANDOFF_ORIGIN}/login?handle=${encodeURIComponent(value)}`);
       return;
     }
     setError('');
@@ -100,90 +108,142 @@ export default function Login() {
     }
   };
 
+  const submit = async (e: SubmitEvent) => {
+    e.preventDefault();
+    const value = handle().trim();
+    if (!isHandle(value)) {
+      setError('That does not look like a valid handle. Try e.g. alice.bsky.social');
+      return;
+    }
+    await startSignIn(value);
+  };
+
+  // Arriving as `/login?handle=you.example.com` means a personal instance already
+  // handed this visitor over after they pressed Continue, so carry straight on
+  // instead of making them press it again.
+  let autoContinued = false;
+  createEffect(() => {
+    if (autoContinued || !authReady()) return;
+    autoContinued = true;
+
+    const fromQuery = new URLSearchParams(location.search).get('handle')?.trim() ?? '';
+    if (PERSONAL_MODE || profile() || !isHandle(fromQuery)) return;
+
+    // Drop the hand-off param so a reload or Back press can't jump straight back
+    // into the provider.
+    window.history.replaceState(null, '', location.pathname);
+    void startSignIn(fromQuery);
+  });
+
   return (
     <main class="mx-auto max-w-md px-4 py-16">
       <Show
         when={profile()}
         fallback={
-          <div class="card relative p-8">
-            <div class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-500/15 blur-3xl dark:bg-sky-400/10" />
-            <div class="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-blue-600/10 blur-3xl dark:bg-blue-500/10" />
-            <h1 class="relative text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign in with atproto</h1>
-            <p class="relative mt-2 text-sm text-slate-600 dark:text-slate-300">
-              Enter your handle (e.g. <span class="font-mono">alice.bsky.social</span>). You'll be redirected to your
-              provider to authorize this app. Your QR codes are stored as records in{' '}
-              <span class="font-semibold">your</span> Bluesky account — not on our servers.
-            </p>
-            <form class="relative mt-6 space-y-4" onSubmit={submit}>
-              <Field label="Handle">
-                <div class="relative">
-                  <Show when={selected()?.avatar}>
-                    <img
-                      src={selected()!.avatar ?? undefined}
-                      alt=""
-                      class="pointer-events-none absolute left-2 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-slate-200 dark:bg-slate-700"
-                      referrerPolicy="no-referrer"
-                    />
-                  </Show>
-                  <TextInput
-                    placeholder="alice.bsky.social"
-                    autocomplete="username"
-                    class={selected() ? 'pl-10' : undefined}
-                    value={handle()}
-                    onInput={(e) => {
-                      setSelected(null);
-                      setHandle(e.currentTarget.value);
-                    }}
-                    onFocus={() => setFocused(true)}
-                    onBlur={() => setFocused(false)}
-                    onKeyDown={onKeyDown}
-                  />
-                  <Show when={open()}>
-                    <ul
-                      class="absolute z-20 mt-1.5 max-h-72 w-full overflow-y-auto rounded-xl border border-slate-200/80 bg-white/90 p-1 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-[#0a1120]/90"
-                      role="listbox"
-                    >
-                      <For each={suggestions()}>
-                        {(s, i) => (
-                          <li
-                            role="option"
-                            aria-selected={activeIndex() === i()}
-                            onMouseDown={(e) => e.preventDefault()}
-                            onMouseEnter={() => setActiveIndex(i())}
-                            onClick={() => select(s)}
-                            class={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 ${
-                              activeIndex() === i() ? 'bg-sky-500/10 dark:bg-sky-500/15' : 'hover:bg-slate-500/10 dark:hover:bg-white/[0.06]'
-                            }`}
-                          >
-                            <Show when={s.avatar}>
-                              <img
-                                src={s.avatar ?? undefined}
-                                alt=""
-                                class="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-700"
-                                referrerPolicy="no-referrer"
-                              />
-                            </Show>
-                            <div class="min-w-0">
-                              <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{s.handle}</p>
-                              <Show when={s.displayName}>
-                                <p class="truncate text-xs text-slate-500 dark:text-slate-400">{s.displayName}</p>
-                              </Show>
-                            </div>
-                          </li>
-                        )}
-                      </For>
-                    </ul>
-                  </Show>
-                </div>
-              </Field>
-              <Show when={error()}>
-                <p class="text-sm text-red-600 dark:text-red-400">{error()}</p>
+          <Show
+            when={!busy()}
+            fallback={
+              <div class="card p-10 text-center">
+                <div class="spinner mx-auto" />
+                <p class="mt-4 text-sm text-slate-600 dark:text-slate-300">
+                  Continuing as <span class="font-mono">{handle().trim() || 'you'}</span>…
+                </p>
+              </div>
+            }
+          >
+            <div class="card relative p-8">
+              <div class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-500/15 blur-3xl dark:bg-sky-400/10" />
+              <div class="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-blue-600/10 blur-3xl dark:bg-blue-500/10" />
+              <h1 class="relative text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign in with atproto</h1>
+              <p class="relative mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Enter your handle (e.g. <span class="font-mono">alice.bsky.social</span>). You'll be redirected to your
+                provider to authorize this app. Your QR codes are stored as records in{' '}
+                <span class="font-semibold">your</span> Bluesky account. Not on our servers.
+              </p>
+              <Show when={HANDOFF_ORIGIN}>
+                <p class="relative mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  This is a personal instance for <span class="font-mono">{OWNER_HANDLE}</span>. Signing in with another
+                  account continues on{' '}
+                  <a
+                    href={`${HANDOFF_ORIGIN}/login`}
+                    class="font-semibold text-sky-600 hover:underline dark:text-sky-400"
+                  >
+                    {HANDOFF_ORIGIN.replace(/^https?:\/\//, '')}
+                  </a>
+                  .
+                </p>
               </Show>
-              <button type="submit" disabled={busy()} class="btn-primary w-full py-3">
-                {busy() ? 'Redirecting…' : 'Continue'}
-              </button>
-            </form>
-          </div>
+              <form class="relative mt-6 space-y-4" onSubmit={submit}>
+                <Field label="Handle">
+                  <div class="relative">
+                    <Show when={selected()?.avatar}>
+                      <img
+                        src={selected()!.avatar ?? undefined}
+                        alt=""
+                        class="pointer-events-none absolute left-2 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-slate-200 dark:bg-slate-700"
+                        referrerPolicy="no-referrer"
+                      />
+                    </Show>
+                    <TextInput
+                      placeholder="alice.bsky.social"
+                      autocomplete="username"
+                      class={selected() ? 'pl-10' : undefined}
+                      value={handle()}
+                      onInput={(e) => {
+                        setSelected(null);
+                        setHandle(e.currentTarget.value);
+                      }}
+                      onFocus={() => setFocused(true)}
+                      onBlur={() => setFocused(false)}
+                      onKeyDown={onKeyDown}
+                    />
+                    <Show when={open()}>
+                      <ul
+                        class="absolute z-20 mt-1.5 max-h-72 w-full overflow-y-auto rounded-xl border border-slate-200/80 bg-white/90 p-1 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-[#0a1120]/90"
+                        role="listbox"
+                      >
+                        <For each={suggestions()}>
+                          {(s, i) => (
+                            <li
+                              role="option"
+                              aria-selected={activeIndex() === i()}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onMouseEnter={() => setActiveIndex(i())}
+                              onClick={() => select(s)}
+                              class={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 ${
+                                activeIndex() === i() ? 'bg-sky-500/10 dark:bg-sky-500/15' : 'hover:bg-slate-500/10 dark:hover:bg-white/[0.06]'
+                              }`}
+                            >
+                              <Show when={s.avatar}>
+                                <img
+                                  src={s.avatar ?? undefined}
+                                  alt=""
+                                  class="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-700"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </Show>
+                              <div class="min-w-0">
+                                <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{s.handle}</p>
+                                <Show when={s.displayName}>
+                                  <p class="truncate text-xs text-slate-500 dark:text-slate-400">{s.displayName}</p>
+                                </Show>
+                              </div>
+                            </li>
+                          )}
+                        </For>
+                      </ul>
+                    </Show>
+                  </div>
+                </Field>
+                <Show when={error()}>
+                  <p class="text-sm text-red-600 dark:text-red-400">{error()}</p>
+                </Show>
+                <button type="submit" disabled={busy()} class="btn-primary w-full py-3">
+                  {busy() ? 'Redirecting…' : 'Continue'}
+                </button>
+              </form>
+            </div>
+          </Show>
         }
       >
         {(p) => (

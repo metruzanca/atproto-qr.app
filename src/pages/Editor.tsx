@@ -18,16 +18,18 @@ import {
 } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
 import { isValidRecord, makeRecord, type Draft, type QRKind, type QRRecord } from '../lib/qr/record';
-import { codeUrl, contentTitle, contentToValue, emptyContent } from '../lib/qr/content';
+import { codePath, codeUrl, contentTitle, contentToValue, emptyContent } from '../lib/qr/content';
+import { PERSONAL_MODE } from '../lib/personal';
 import { DEFAULT_STYLE } from '../lib/qr/style';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { globalAnalytics, type QRCodeTracking } from '../lib/qr/tracking';
 import { Studio } from '../components/Studio';
 import { showToast } from '../components/Toast';
 
-export default function Editor() {
+export default function Editor(props: { code?: { handle: string; id: string } }) {
   const params = useParams<{ handle: string; id: string }>();
   const navigate = useNavigate();
+  const target = () => props.code ?? { handle: params.handle, id: params.id };
 
   const [status, setStatus] = createSignal<'loading' | 'loaded' | 'forbidden' | 'notfound'>('loading');
   const [mode, setMode] = createSignal<'qr' | 'redirect'>('qr');
@@ -43,8 +45,7 @@ export default function Editor() {
   const [unlocked, setUnlocked] = createSignal(false);
   const [tracking, setTracking] = createSignal<QRCodeTracking | undefined>(undefined);
 
-  const publicPath = () => `/${params.handle}/${params.id}`;
-  const publicUrl = () => `${location.origin}${publicPath()}`;
+  const publicUrl = () => codeUrl(target().handle, target().id);
 
   const qrData = () => {
     const d = draft();
@@ -63,8 +64,7 @@ export default function Editor() {
   };
 
   createEffect(async () => {
-    const handle = params.handle;
-    const id = params.id;
+    const { handle, id } = target();
     if (!isHandle(handle) || !isRecordKey(id)) {
       setStatus('notfound');
       return;
@@ -121,7 +121,7 @@ export default function Editor() {
   const validateName = (value: string): string => {
     if (!value) return 'Enter a name';
     if (!isValidSlug(value)) return 'Use lowercase letters, numbers, and hyphens';
-    if (value !== params.id && existingNames().has(value)) {
+    if (value !== target().id && existingNames().has(value)) {
       return `You already have a code named "${value}"`;
     }
     return '';
@@ -143,6 +143,7 @@ export default function Editor() {
     const d = draft();
     const a = agent();
     const p = profile();
+    const current = target().id;
     const v = name().trim();
     const err = validateName(v);
     setNameError(err);
@@ -168,45 +169,45 @@ export default function Editor() {
         return record;
       };
       if (mode() === 'redirect') {
-        if (v === params.id) {
-          await createQRRecord(client, p.did, params.id, buildRecord());
-          await deleteRedirectRecord(client, p.did, params.id);
+        if (v === current) {
+          await createQRRecord(client, p.did, current, buildRecord());
+          await deleteRedirectRecord(client, p.did, current);
           showToast('Saved as a QR code');
-          navigate(`${publicPath()}/edit`, { replace: true });
+          navigate(codePath(p.handle, current, { edit: true }), { replace: true });
         } else {
           const record = buildRecord();
-          record.aliases = [params.id];
+          record.aliases = [current];
           await createQRRecord(client, p.did, v, record);
-          await putRedirectRecord(client, p.did, params.id, v);
-          await cascadeDeleteQRRecord(client, p.did, params.id, []).catch((cleanupErr) => {
+          await putRedirectRecord(client, p.did, current, v);
+          await cascadeDeleteQRRecord(client, p.did, current, []).catch((cleanupErr) => {
             console.warn('failed to remove stale QR record:', cleanupErr);
           });
           showToast(`Renamed to ${v}`);
-          navigate(`/${p.handle}/${v}/edit`, { replace: true });
+          navigate(codePath(p.handle, v, { edit: true }), { replace: true });
         }
         return;
       }
 
-      if (v === params.id) {
+      if (v === current) {
         const record = buildRecord();
-        await putQRRecord(client, p.did, params.id, record);
+        await putQRRecord(client, p.did, current, record);
         showToast('Changes saved');
       } else {
         const record = buildRecord();
-        record.aliases = [...(existing()?.aliases ?? []), params.id];
+        record.aliases = [...(existing()?.aliases ?? []), current];
         await createQRRecord(client, p.did, v, record);
         try {
-          await putRedirectRecord(client, p.did, params.id, v);
+          await putRedirectRecord(client, p.did, current, v);
         } catch (renameErr) {
           await cascadeDeleteQRRecord(client, p.did, v, []).catch(() => {});
           throw renameErr;
         }
-        await cascadeDeleteQRRecord(client, p.did, params.id, []).catch((cleanupErr) => {
+        await cascadeDeleteQRRecord(client, p.did, current, []).catch((cleanupErr) => {
           console.warn('failed to remove old QR record:', cleanupErr);
         });
         setExistingNames((prev) => new Set(prev).add(v));
         showToast(`Renamed to ${v}`);
-        navigate(`/${p.handle}/${v}/edit`, { replace: true });
+        navigate(codePath(p.handle, v, { edit: true }), { replace: true });
       }
     } catch (err) {
       if (err instanceof QRNameTakenError) {
@@ -227,7 +228,7 @@ export default function Editor() {
     if (mode() === 'redirect') {
       if (!confirm('Delete this redirect? This breaks the old URL it was printed under.')) return;
       try {
-        await deleteRedirectRecord(authedClient(a), p.did, params.id);
+        await deleteRedirectRecord(authedClient(a), p.did, target().id);
         navigate('/codes');
       } catch (err) {
         console.error(err);
@@ -237,7 +238,7 @@ export default function Editor() {
     }
     if (!confirm('Delete this QR code? This removes the code and all of its old links from your Bluesky account, breaking every printed URL for it.')) return;
     try {
-      await cascadeDeleteQRRecord(authedClient(a), p.did, params.id, existing()?.aliases ?? []);
+      await cascadeDeleteQRRecord(authedClient(a), p.did, target().id, existing()?.aliases ?? []);
       navigate('/codes');
     } catch (err) {
       console.error(err);
@@ -255,7 +256,7 @@ export default function Editor() {
         <div class="card p-10 text-center">
           <h1 class="text-xl font-bold text-slate-900 dark:text-white">This isn't your QR code</h1>
           <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            Only the owner of {params.handle} can edit this code.
+            Only the owner of {target().handle} can edit this code.
           </p>
           <a href="/login" class="btn-primary mt-4 inline-block">
             Sign in
@@ -279,7 +280,7 @@ export default function Editor() {
                   Editing · {contentTitle(d().content)}
                 </p>
                 <h1 class="mt-1 flex flex-wrap items-center gap-2 truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  {params.handle}/{params.id}
+                  {PERSONAL_MODE ? `#${target().id}` : `${target().handle}/${target().id}`}
                   <Show when={mode() === 'redirect'}>
                     <span class="badge bg-amber-500/15 text-amber-700 dark:text-amber-300">
                       Redirect

@@ -155,14 +155,14 @@ export function Studio(props: Props) {
 
             <Show when={props.kind === 'fixed'}>
               <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Fixed: the QR encodes your data directly. After saving, the data is locked — you can change the look,
+                Fixed: the QR encodes your data directly. After saving, the data is locked. You can change the look,
                 but the printed image stays the same.
               </p>
             </Show>
 
             <Show when={props.kind === 'dynamic' && props.onSave}>
               <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Dynamic: the QR encodes a link back to this app. You can change the data any time — the printed QR
+                Dynamic: the QR encodes a link back to this app. You can change the data any time: the printed QR
                 never changes.
               </p>
             </Show>
@@ -289,7 +289,7 @@ export function Studio(props: Props) {
                 hint={
                   props.globalAnalytics
                     ? trackingConfigSummary(props.globalAnalytics)
-                    : 'No global config yet — set one up in Settings.'
+                    : 'No global config yet. Set one up in Settings.'
                 }
                 onClick={() => setTrackingSource('global')}
               />

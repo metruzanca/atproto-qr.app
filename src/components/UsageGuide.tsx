@@ -2,6 +2,7 @@ import type { JSX } from 'solid-js';
 
 import type { ContentType } from '../lib/qr/content';
 import { Reveal } from './Reveal';
+import { Eyebrow } from './ui';
 
 const iconClass = 'h-5 w-5';
 
@@ -25,7 +26,7 @@ const EXAMPLES: ExampleCard[] = [
       </svg>
     ),
     title: 'Point people at a webpage',
-    desc: 'Menus, current offers, review pages, booking links — anything on the internet, in one scan.',
+    desc: 'Menus, current offers, review pages, booking links. Anything on the internet, in one scan.',
     tip: 'Expect to change the destination later? Save it as a Dynamic code so the printed sticker never goes stale.',
   },
   {
@@ -40,7 +41,7 @@ const EXAMPLES: ExampleCard[] = [
       </svg>
     ),
     title: 'Guest WiFi, no typing',
-    desc: 'Cafés, Airbnbs, offices, waiting rooms. Guests connect in one scan — no password typing or spelling mistakes.',
+    desc: 'Cafés, Airbnbs, offices, waiting rooms. Guests connect in one scan, with no password typing or spelling mistakes.',
     tip: 'WiFi details are baked into a Fixed code. Change the password and you reprint.',
   },
   {
@@ -54,7 +55,7 @@ const EXAMPLES: ExampleCard[] = [
     ),
     title: 'Your contact card in a tap',
     desc: 'Business cards, networking, freelancers and artists. One scan saves your full details to a phone.',
-    tip: 'Keep the fields short — a lean vCard makes a cleaner, easier-to-scan code.',
+    tip: 'Keep the fields short: a lean vCard makes a cleaner, easier-to-scan code.',
   },
   {
     type: 'email',
@@ -78,7 +79,7 @@ const EXAMPLES: ExampleCard[] = [
       </svg>
     ),
     title: 'Call now',
-    desc: 'Storefronts, property signs, tradespeople — anywhere a phone call is the next step.',
+    desc: 'Storefronts, property signs, tradespeople. Anywhere a phone call is the next step.',
     tip: 'Include the country code so international callers reach you too.',
   },
   {
@@ -133,7 +134,7 @@ const EXAMPLES: ExampleCard[] = [
       </svg>
     ),
     title: 'Plain text that works offline',
-    desc: 'Instructions, notes, serial numbers. The words live in the code itself — nothing to sign in to, nothing to load.',
+    desc: 'Instructions, notes, serial numbers. The words live in the code itself: nothing to sign in to, nothing to load.',
     tip: 'Perfect for things that must work even if a website or server disappears.',
   },
   {
@@ -148,7 +149,7 @@ const EXAMPLES: ExampleCard[] = [
       </svg>
     ),
     title: 'Receive payments or donations',
-    desc: 'A wallet address in one scan — no copying a long string by hand, no typos.',
+    desc: 'A wallet address in one scan, with no long string to copy and no typos.',
     tip: 'Saved codes are public on the atproto network. Only share addresses you’re happy to be public.',
   },
   {
@@ -162,14 +163,14 @@ const EXAMPLES: ExampleCard[] = [
     ),
     title: 'Share a file from your own server',
     desc: 'PDFs, menus, product sheets. The code fetches the file straight from your Bluesky account.',
-    tip: 'Sign in to upload — the file is stored on your Bluesky account, so it keeps working as long as your account does.',
+    tip: 'Sign in to upload. The file is stored on your Bluesky account, so it keeps working as long as your account does.',
   },
 ];
 
 const tips: { title: string; body: string }[] = [
   {
     title: 'Size for the distance',
-    body: 'As a rough guide, make the printed code about one-tenth of the scanning distance — roughly 10 cm across for a code scanned from a metre away, and far bigger for posters.',
+    body: 'As a rough guide, make the printed code about one-tenth of the scanning distance, so roughly 10 cm across for a code scanned from a metre away, and far bigger for posters.',
   },
   {
     title: 'Keep contrast high',
@@ -197,15 +198,6 @@ const tips: { title: string; body: string }[] = [
   },
 ];
 
-function Eyebrow(props: { label: string }) {
-  return (
-    <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400">
-      <span class="h-px w-6 rounded-full bg-gradient-to-r from-sky-500 to-blue-600" />
-      {props.label}
-    </p>
-  );
-}
-
 export function UsageGuide() {
   return (
     <div class="mt-24 space-y-24">
@@ -214,7 +206,7 @@ export function UsageGuide() {
           <Eyebrow label="Inspiration" />
           <h2 class="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Ideas for your next code</h2>
           <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            Every content type is a ready-made use case. Pick one below to start, or read through the ideas — most
+            Every content type is a ready-made use case. Pick one below to start, or read through the ideas. Most
             people don’t need all of them, just the one that matches their situation.
           </p>
         </Reveal>
@@ -260,10 +252,10 @@ export function UsageGuide() {
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
                 </span>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white">Fixed — data baked in</h3>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Fixed: data baked in</h3>
               </div>
               <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                The link, WiFi details, or contact info live inside the code itself. Print it once and it works forever —
+                The link, WiFi details, or contact info live inside the code itself. Print it once and it works forever:
                 no account, no app, no server in between.
               </p>
               <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -286,17 +278,17 @@ export function UsageGuide() {
                     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                   </svg>
                 </span>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white">Dynamic — change it after printing</h3>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Dynamic: change it after printing</h3>
               </div>
               <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                The code points at a page you control. Update the destination any time — the printed code never changes,
+                The code points at a page you control. Update the destination any time. The printed code never changes,
                 and it always shows your latest info.
               </p>
               <p class="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                 <span class="font-semibold text-slate-700 dark:text-slate-200">Best for:</span> menus, offers, and events you’ll repoint.
               </p>
               <p class="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                <span class="font-semibold text-slate-700 dark:text-slate-200">Note:</span> needs a sign-in — your codes live on your own
+                <span class="font-semibold text-slate-700 dark:text-slate-200">Note:</span> needs a sign-in: your codes live on your own
                 Bluesky account. The code’s page depends on this app and your account staying online.
               </p>
             </div>

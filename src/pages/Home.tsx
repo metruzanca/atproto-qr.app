@@ -1,15 +1,17 @@
 import { createEffect, createSignal, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 
-import { agent, profile } from '../lib/atproto/auth';
+import { agent, profile, authReady } from '../lib/atproto/auth';
 import { authedClient, createQRRecord, listAllNames, QRNameTakenError, uploadFile } from '../lib/atproto/records';
-import { codeUrl, contentToValue, emptyContent } from '../lib/qr/content';
+import { codePath, codeUrl, contentToValue, emptyContent } from '../lib/qr/content';
 import { generateCodeName, isValidSlug } from '../lib/qr/name';
 import { DEFAULT_STYLE } from '../lib/qr/style';
 import { draftFromParams, draftToParams, makeRecord, type Draft, type QRKind } from '../lib/qr/record';
 import { globalAnalytics, type QRCodeTracking } from '../lib/qr/tracking';
 import { Studio } from '../components/Studio';
 import { UsageGuide } from '../components/UsageGuide';
+import { SelfHosting } from '../components/SelfHosting';
+import { PERSONAL_MODE } from '../lib/personal';
 
 function readDraftFromUrl(): Draft | null {
   const params = new URLSearchParams(location.search);
@@ -27,6 +29,11 @@ export default function Home() {
   const [saving, setSaving] = createSignal(false);
   const [saveError, setSaveError] = createSignal('');
   const [tracking, setTracking] = createSignal<QRCodeTracking | undefined>(undefined);
+
+  // A signed-in owner of a personal instance already knows all this: skip the
+  // marketing guide and make the page feel like an app. Everyone else (strangers
+  // on a personal instance, any visitor elsewhere) still gets the full tour.
+  const showGuide = () => !PERSONAL_MODE || (authReady() && !profile());
 
   createEffect(() => {
     const a = agent();
@@ -114,7 +121,7 @@ export default function Home() {
       }
       await createQRRecord(authedClient(a), p.did, v, record);
       setExistingKeys((prev) => new Set(prev).add(v));
-      navigate(`/${p.handle}/${v}/edit`, { replace: true });
+      navigate(codePath(p.handle, v, { edit: true }), { replace: true });
     } catch (err) {
       if (err instanceof QRNameTakenError) {
         setNameError(err.message);
@@ -127,6 +134,15 @@ export default function Home() {
     }
   };
 
+  // A plain `#ideas` anchor would collide with personal-instance code links
+  // (`/#name`), so scroll to the guide explicitly instead.
+  const scrollToIdeas = () => {
+    const el = document.getElementById('ideas');
+    if (!el) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  };
+
   return (
     <main class="mx-auto max-w-6xl px-4">
       <div class="flex min-h-[calc(100svh-6.5rem)] flex-col justify-center pt-8">
@@ -135,28 +151,31 @@ export default function Home() {
             Beautiful QR codes, <span class="text-gradient">designed and yours.</span>
           </h1>
           <p class="mx-auto mt-3 max-w-2xl text-slate-600 dark:text-slate-300">
-            Style a QR code in seconds, download it anywhere — or sign in to save it as a{' '}
+            Style a QR code in seconds, download it anywhere, or sign in to save it as a{' '}
             <span class="font-semibold text-slate-800 dark:text-slate-100">fixed</span> or{' '}
             <span class="font-semibold text-slate-800 dark:text-slate-100">dynamic</span> code that lives on your own Bluesky account.
           </p>
-          <a
-            href="#ideas"
-            class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-sky-600 hover:underline dark:text-sky-400"
-          >
-            Need inspiration? See ideas &amp; tips
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="h-4 w-4 animate-bounce-soft"
-              aria-hidden="true"
+          <Show when={showGuide()}>
+            <button
+              type="button"
+              onClick={scrollToIdeas}
+              class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-sky-600 hover:underline dark:text-sky-400"
             >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </a>
+              Need inspiration? See ideas &amp; tips
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4 animate-bounce-soft"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+          </Show>
         </section>
 
         <Show when={saveError()}>
@@ -175,8 +194,8 @@ export default function Home() {
             emptyHint={
               kind() === 'dynamic'
                 ? profile()
-                  ? 'Enter a name to see the dynamic QR — it encodes the link to this page, not your data.'
-                  : 'Sign in to save a dynamic code — it encodes a link back to this app.'
+                  ? 'Enter a name to see the dynamic QR. It encodes the link to this page, not your data.'
+                  : 'Sign in to save a dynamic code. It encodes a link back to this app.'
                 : undefined
             }
             onSave={profile() ? save : undefined}
@@ -192,7 +211,14 @@ export default function Home() {
         </div>
       </div>
 
-      <UsageGuide />
+      <Show when={showGuide()}>
+        <UsageGuide />
+      </Show>
+
+      {/* A personal instance is already self-hosted, so skip the pitch. */}
+      <Show when={!PERSONAL_MODE}>
+        <SelfHosting />
+      </Show>
     </main>
   );
 }

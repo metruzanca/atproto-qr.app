@@ -5,16 +5,18 @@ import { isHandle, isRecordKey } from '@atcute/lexicons/syntax';
 import { profile } from '../lib/atproto/auth';
 import { getGlobalAnalytics, getQRRecord, getRedirectRecord, getSettingsRecord } from '../lib/atproto/records';
 import { resolveHandle } from '../lib/atproto/resolve';
-import { codeUrl, contentTitle, contentToValue, isHttpUrl, type BlobRef } from '../lib/qr/content';
+import { codePath, codeUrl, contentTitle, contentToValue, isHttpUrl, type BlobRef } from '../lib/qr/content';
 import { isValidRecord, qrValueFor, type QRKind } from '../lib/qr/record';
 import { isValidSlug } from '../lib/qr/name';
 import type { QRStyle } from '../lib/qr/style';
 import { fireTracking, type TrackingConfig } from '../lib/qr/tracking';
+import { OWNER_HANDLE, PERSONAL_MODE } from '../lib/personal';
 import { QRPreview } from '../components/QRPreview';
 
-export default function QRPublic() {
+export default function QRPublic(props: { code?: { handle: string; id: string } }) {
   const params = useParams<{ handle: string; id: string }>();
   const navigate = useNavigate();
+  const target = () => props.code ?? { handle: params.handle, id: params.id };
 
   const [status, setStatus] = createSignal<'loading' | 'found' | 'notfound' | 'error'>('loading');
   const [content, setContent] = createSignal<{ type: string; title: string; value: string; kind: QRKind } | null>(null);
@@ -72,21 +74,29 @@ export default function QRPublic() {
   };
 
   createEffect(async () => {
-    const handle = params.handle;
-    const id = params.id;
+    const { handle, id } = target();
     if (!isHandle(handle) || !isRecordKey(id)) {
       setStatus('notfound');
       return;
     }
 
     try {
-      const actor = await resolveHandle(handle);
+      let actor;
+      try {
+        actor = await resolveHandle(handle);
+      } catch (err) {
+        console.error(err);
+        // A personal instance resolves the handle from its env var; failing here
+        // means the deployment is misconfigured rather than the code missing.
+        setStatus(PERSONAL_MODE ? 'error' : 'notfound');
+        return;
+      }
       setOwnerDid(actor.did);
       const item = await getQRRecord(actor.pds, actor.did, id);
       if (!item || !isValidRecord(item.record)) {
         const redirect = await getRedirectRecord(actor.pds, actor.did, id);
         if (redirect && isValidSlug(redirect.target)) {
-          navigate(`/${handle}/${redirect.target}`, { replace: true });
+          navigate(codePath(handle, redirect.target), { replace: true });
           return;
         }
         setStatus('notfound');
@@ -115,7 +125,7 @@ export default function QRPublic() {
         setProxyOrigin(undefined);
       }
 
-      const value = qrValueFor(item.record, codeUrl(params.handle, params.id), ctx);
+      const value = qrValueFor(item.record, codeUrl(handle, id), ctx);
       const dataValue = contentToValue(item.record.content, ctx);
       setStyle(item.record.style);
       setFile(null);
@@ -162,6 +172,16 @@ export default function QRPublic() {
         </div>
       </Show>
 
+      <Show when={status() === 'error'}>
+        <div class="card p-10 text-center">
+          <h1 class="text-xl font-bold text-slate-900 dark:text-white">This instance can't reach its account</h1>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            We couldn't resolve <span class="font-mono">{OWNER_HANDLE}</span> on the atproto network. Check the
+            <span class="font-mono"> VITE_OWNER_HANDLE</span> setting for this deployment.
+          </p>
+        </div>
+      </Show>
+
       <Show when={status() === 'found' && content() && style()}>
         <div class="card animate-fade-up p-6 sm:p-8">
           <div class="flex items-center justify-between gap-3">
@@ -179,7 +199,7 @@ export default function QRPublic() {
               </h1>
             </div>
             <Show when={isOwner()}>
-              <a href={`/${params.handle}/${params.id}/edit`} class="btn-primary shrink-0 py-2">
+              <a href={codePath(target().handle, target().id, { edit: true })} class="btn-primary shrink-0 py-2">
                 Edit
               </a>
             </Show>

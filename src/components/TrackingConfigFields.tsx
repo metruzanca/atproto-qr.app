@@ -64,7 +64,7 @@ export function TrackingConfigFields(props: Props) {
               onInput={(e) => update({ measurementId: e.currentTarget.value.trim() })}
             />
           </Field>
-          <Field label="Paste your GA tag instead" hint="Paste a standard gtag.js snippet — the ID is extracted automatically.">
+          <Field label="Paste your GA tag instead" hint="Paste a standard gtag.js snippet. The ID is extracted automatically.">
             <TextInput
               placeholder="<script async src=…gtag/js?id=G-…></script>"
               spellcheck={false}

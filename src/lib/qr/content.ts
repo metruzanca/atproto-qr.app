@@ -168,9 +168,10 @@ export function contentToValue(content: Content, ctx?: ContentContext): string {
   }
 }
 
-export function codeUrl(handle: string, name: string): string {
-  return `${location.origin}/${handle}/${name}`;
-}
+// Code URLs are built in `src/lib/personal.ts` so personal instances can use
+// `/#name` short links. Re-exported here because most call sites live next to
+// the content helpers.
+export { codePath, codeUrl } from '../personal';
 
 export function isHttpUrl(value: string): boolean {
   try {

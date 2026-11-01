@@ -6,6 +6,15 @@ const inputClass =
 const labelClass =
   'mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400';
 
+export function Eyebrow(props: { label: string }) {
+  return (
+    <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400">
+      <span class="h-px w-6 rounded-full bg-gradient-to-r from-sky-500 to-blue-600" />
+      {props.label}
+    </p>
+  );
+}
+
 export function Field(props: { label: string; hint?: string; children: JSX.Element }) {
   return (
     <label class="block">

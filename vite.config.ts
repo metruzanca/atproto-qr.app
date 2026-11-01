@@ -5,17 +5,32 @@ import { defineConfig, type Plugin } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import devtools from 'solid-devtools/vite';
 
+function normalizeOrigin(value: string | undefined): string {
+  const raw = (value ?? '').trim().replace(/\/+$/, '');
+  if (!raw) return '';
+  try {
+    return new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).origin;
+  } catch {
+    return '';
+  }
+}
+
 function oauthMetadataPlugin(): Plugin {
   let outDir = '';
+  let env: Record<string, string> = {};
   return {
     name: 'oauth-client-metadata',
     configResolved(config) {
       outDir = path.resolve(config.root, config.build.outDir);
+      // Resolved env: `.env` files merged with the process environment, so a
+      // local build and a CI build generate the same document.
+      env = config.env as Record<string, string>;
     },
     closeBundle: async () => {
-      const origin = (process.env.VITE_PUBLIC_ORIGIN ?? '').replace(/\/$/, '');
+      // `VITE_DOMAIN` is the single source of truth for this deployment's origin.
+      const origin = normalizeOrigin(env.VITE_DOMAIN) || normalizeOrigin(process.env.VITE_DOMAIN);
       if (!origin) {
-        console.warn('[oauth-client-metadata] VITE_PUBLIC_ORIGIN is not set — skipping metadata generation.');
+        console.warn('[oauth-client-metadata] VITE_DOMAIN is not set — skipping metadata generation.');
         return;
       }
       const metadata = {
