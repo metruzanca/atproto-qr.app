@@ -1,0 +1,3 @@
+# SPA fallback for Netlify and Cloudflare Pages, which read `_redirects` from the
+# publish directory. Vercel is configured in vercel.json instead.
+/*    /index.html   200

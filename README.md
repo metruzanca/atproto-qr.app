@@ -59,6 +59,14 @@ Your saved codes are records in your PDS (`app.atproto-qr.qr`). When you rename 
 
 The app is fully static — `dist/` runs on any static host, and the repo ships a Docker + Caddy setup that mirrors the production serving (see [`selfhost/`](selfhost/README.md), kept in a subdirectory so Railway never mistakes it for a build file).
 
+It is a single-page app, so every path has to fall back to `index.html` or deep links 404. That is wired up for the common hosts already:
+
+- **Vercel**: [`vercel.json`](vercel.json) rewrites unmatched paths to `index.html`.
+- **Netlify / Cloudflare Pages**: [`public/_redirects`](public/_redirects) does the same.
+- **Docker / anything with Caddy**: `try_files {path} /index.html` in `selfhost/Caddyfile`.
+
+On any other host, add that fallback yourself. Set `VITE_DOMAIN` in the host's build environment too, or the OAuth metadata and code links will point at the wrong origin.
+
 ### Environment variables
 
 | Env var               | Required | Description                                                                                                  |

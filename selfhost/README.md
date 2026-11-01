@@ -127,6 +127,8 @@ breaks before you get round to it.
   `/:handle/:id/edit`, `/codes`, `/settings`) fall back to `index.html`; static
   assets like `/oauth-client-metadata.json` are served as-is. In personal mode
   there are no `/:handle/:id` routes; codes are resolved from `/#name` on `/`.
+  Caddy does this with `try_files`; the same fallback ships for other hosts in
+  `vercel.json` and `public/_redirects`.
 - **Health**: `/health` responds `200 "ok"` for load balancers / healthchecks.
 
 ## TLS options
