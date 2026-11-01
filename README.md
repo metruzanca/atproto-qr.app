@@ -57,13 +57,13 @@ Your saved codes are records in your PDS (`app.atproto-qr.qr`). When you rename 
 
 ## Self-hosting
 
-The app is fully static — `dist/` runs on any static host, and the repo ships a Docker + Caddy setup that mirrors the production serving (see [`selfhost/`](selfhost/README.md), kept in a subdirectory so Railway never mistakes it for a build file).
+The app is fully static: `dist/` runs on any static host. There is no Docker setup to maintain and nothing to run server-side — see [`SELFHOST.md`](SELFHOST.md) for the full guide.
 
 It is a single-page app, so every path has to fall back to `index.html` or deep links 404. That is wired up for the common hosts already:
 
+- **Railway**: Railpack builds the Vite app and serves `dist/` through Caddy; [`railpack.json`](railpack.json) pins the Node provider and version.
 - **Vercel**: [`vercel.json`](vercel.json) rewrites unmatched paths to `index.html`.
 - **Netlify / Cloudflare Pages**: [`public/_redirects`](public/_redirects) does the same.
-- **Docker / anything with Caddy**: `try_files {path} /index.html` in `selfhost/Caddyfile`.
 
 On any other host, add that fallback yourself. Set `VITE_DOMAIN` in the host's build environment too, or the OAuth metadata and code links will point at the wrong origin.
 
@@ -73,12 +73,10 @@ On any other host, add that fallback yourself. Set `VITE_DOMAIN` in the host's b
 | --------------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
 | `VITE_DOMAIN`         | yes      | Where the app is served — `https://qr.example.com` or a bare `qr.example.com`. Build-time; generates the OAuth client metadata + redirect URI and is the base of every code link, so previews and QR codes get the real domain instead of `127.0.0.1`. |
 | `VITE_OWNER_HANDLE`   | no       | Personal-instance mode: pin the deployment to this handle and serve its codes from `{domain}/#name`.          |
-| `PORT`                | no       | Host port to publish Caddy on (default `8080`).                                                                |
-| `DOMAIN`              | no       | Your domain, e.g. `qrs.example.com`, to let Caddy manage TLS automatically. Unset = plain HTTP.                 |
 
 These are baked in at build time, so changing them requires a rebuild.
 
-Set `VITE_OWNER_HANDLE` to run your own single-owner instance on a short domain — e.g. `qr.yourname.dev/#gg27` instead of `qr.yourname.dev/you.example.com/gg27`. The handle stays in the env var, links stay short, and the records still live in your PDS. See [the self-hosting notes](selfhost/README.md#personal-instance-mode) for the details and tradeoffs.
+Set `VITE_OWNER_HANDLE` to run your own single-owner instance on a short domain — e.g. `qr.yourname.dev/#gg27` instead of `qr.yourname.dev/you.example.com/gg27`. The handle stays in the env var, links stay short, and the records still live in your PDS. See [the self-hosting notes](SELFHOST.md#personal-instance-mode) for the details and tradeoffs.
 
 ### CORS image proxy for logos
 

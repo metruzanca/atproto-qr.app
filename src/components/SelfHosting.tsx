@@ -87,7 +87,7 @@ const POINTS = [
 const STEPS: { title: string; body: JSX.Element }[] = [
   {
     title: 'Deploy the static build',
-    body: 'Vercel, Netlify and Cloudflare Pages build Vite apps on their free plans. Any static host works.',
+    body: 'Railway, Vercel, Netlify and Cloudflare Pages all host it on their free plans. Any static host works.',
   },
   {
     title: 'Set two variables',
@@ -207,7 +207,7 @@ export function SelfHosting() {
                 </pre>
                 <div class="mt-auto flex flex-wrap gap-2 pt-4">
                   <a
-                    href="https://github.com/metruzanca/atproto-qr.app/tree/main/selfhost"
+                    href="https://github.com/metruzanca/atproto-qr.app/blob/main/SELFHOST.md"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="btn-primary py-2"
