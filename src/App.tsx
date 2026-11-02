@@ -1,5 +1,5 @@
 import { createEffect, onCleanup, onMount, Show, type JSX } from 'solid-js';
-import { Route, Router, useLocation } from '@solidjs/router';
+import { Route, Router, useLocation, useParams } from '@solidjs/router';
 
 import { initAuth } from './lib/atproto/auth';
 import { hashTarget, OWNER_HANDLE, PERSONAL_MODE, syncHashTarget } from './lib/personal';
@@ -96,8 +96,10 @@ function Root(props: { children?: JSX.Element }) {
 }
 
 /**
- * `/` normally renders the studio. On a personal instance, a `#name` or
- * `#name/edit` hash swaps in the public page or editor for that code.
+ * `/` normally renders the studio. On a personal instance, a `#name` hash swaps
+ * in the public page for that code. The editor has a real route of its own
+ * (`/{name}/edit`); `#name/edit` is still parsed as a legacy alias so links
+ * from older builds keep working.
  */
 function HomeRoute() {
   return (
@@ -111,6 +113,12 @@ function HomeRoute() {
       }
     </Show>
   );
+}
+
+/** Personal-mode editor route: the owner's handle comes from the env var, not the URL. */
+function PersonalEditor() {
+  const params = useParams<{ id: string }>();
+  return <Editor code={{ handle: OWNER_HANDLE, id: params.id }} />;
 }
 
 const App = () => {
@@ -127,7 +135,8 @@ const App = () => {
       <Route path="/about" component={About} />
       <Route path="/lexicons" component={Lexicons} />
       <Route path="/settings" component={Settings} />
-      {/* Personal instances only serve the owner's codes, and only from `/#name`. */}
+      {/* Personal instances serve codes from `/#name` and their editor from `/{name}/edit`. */}
+      {PERSONAL_MODE && <Route path="/:id/edit" component={PersonalEditor} />}
       <Route path="/:handle/:id" component={PERSONAL_MODE ? NotFound : QRPublic} />
       <Route path="/:handle/:id/edit" component={PERSONAL_MODE ? NotFound : Editor} />
       <Route path="*" component={NotFound} />

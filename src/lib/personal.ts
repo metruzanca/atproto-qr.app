@@ -34,18 +34,21 @@ export interface CodeTarget {
 /**
  * The one place code URLs are built.
  *
- * In-app links (`codePath`) stay root-relative — `/#gg27` — because a bare
- * `#gg27` would resolve against whatever path you're on.
+ * In-app links to a code's public page (`codePath`) stay root-relative — `/#gg27`
+ * — because a bare `#gg27` would resolve against whatever path you're on. The
+ * editor lives at a real path (`/gg27/edit`): the fragment namespace is the
+ * printed payload, and a single-segment path would collide with `/login`,
+ * `/codes`, `/about`, `/settings` and `/lexicons`.
  *
  * The URL we bake into a QR code (`codeUrl`) drops the slash: browsers parse
  * `https://qr.zanca.dev#gg27` as path `/` + fragment, so it costs one character
  * less for exactly the same destination, and fewer characters make a smaller QR.
  */
 export function codePath(handle: string, name: string, opts: { edit?: boolean } = {}): string {
-  const suffix = opts.edit ? '/edit' : '';
   if (PERSONAL_MODE) {
-    return `/#${name}${suffix}`;
+    return opts.edit ? `/${name}/edit` : `/#${name}`;
   }
+  const suffix = opts.edit ? '/edit' : '';
   return `/${handle}/${name}${suffix}`;
 }
 

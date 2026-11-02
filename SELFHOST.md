@@ -51,9 +51,9 @@ VITE_DOMAIN=https://qr.example.com
 VITE_OWNER_HANDLE=you.example.com
 ```
 
-- Codes live at `https://qr.example.com/#name` (`#name/edit` for the editor). The
-  handle comes from the env var, so it never appears in the URL, and new dynamic
-  codes encode the short link.
+- Codes live at `https://qr.example.com/#name`, and the editor is at
+  `https://qr.example.com/{name}/edit`. The handle comes from the env var, so it
+  never appears in the URL, and new dynamic codes encode the short link.
 - Signing in with any other handle hands off to `https://atproto-qr.app`
   (hardcoded, not configurable). It is a cosmetic gate: nothing is stored
   server-side, and a visitor can only ever write to their own PDS.

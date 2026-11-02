@@ -177,6 +177,7 @@ function renderQR(
   onDelete: (rkey: string, aliases: string[] | undefined) => Promise<void>,
 ) {
   const url = codePath(p.handle, entry.rkey);
+  const editUrl = codePath(p.handle, entry.rkey, { edit: true });
   const kind = entry.record.kind ?? 'fixed';
   const payload = qrValueFor(entry.record, codeUrl(p.handle, entry.rkey), { pdsUrl: p.pdsUrl, did: p.did });
   const subtitle =
@@ -186,7 +187,7 @@ function renderQR(
   return (
     <li class="card flex items-center gap-4 p-3">
       <A
-        href={`${url}/edit`}
+        href={editUrl}
         title="Edit"
         class="block h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200/70 bg-white/60 transition hover:opacity-80 dark:border-white/10 dark:bg-white/[0.04]"
       >
@@ -194,7 +195,7 @@ function renderQR(
       </A>
       <div class="min-w-0 flex-1">
         <p class="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-          <A href={`${url}/edit`} class="truncate transition hover:text-sky-600 hover:underline dark:hover:text-sky-400">
+          <A href={editUrl} class="truncate transition hover:text-sky-600 hover:underline dark:hover:text-sky-400">
             {entry.rkey}
           </A>
           <span
@@ -225,7 +226,7 @@ function renderQR(
           View
         </A>
         {kind === 'dynamic' && <CopyLinkButton url={codeUrl(p.handle, entry.rkey)} />}
-        <A href={`${url}/edit`} class="btn-ghost text-sky-600 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-400">
+        <A href={editUrl} class="btn-ghost text-sky-600 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-400">
           Edit
         </A>
         <button
@@ -246,6 +247,7 @@ function renderRedirect(
   onDelete: (rkey: string) => Promise<void>,
 ) {
   const url = codePath(p.handle, entry.rkey);
+  const editUrl = codePath(p.handle, entry.rkey, { edit: true });
   return (
     <li class="card flex items-center gap-4 p-3">
       <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-amber-200/70 bg-amber-500/10 text-amber-500 dark:border-amber-500/30 dark:text-amber-300">
@@ -266,7 +268,7 @@ function renderRedirect(
         <A href={url} target="_blank" class="btn-ghost">
           View
         </A>
-        <A href={`${url}/edit`} class="btn-ghost text-sky-600 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-400">
+        <A href={editUrl} class="btn-ghost text-sky-600 hover:bg-sky-500/10 hover:text-sky-700 dark:text-sky-400">
           Edit
         </A>
         <button
