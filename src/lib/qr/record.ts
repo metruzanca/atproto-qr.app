@@ -1,5 +1,5 @@
 import { contentToValue, CONTENT_TYPES, defaultFields, type Content, type ContentContext, type ContentType } from './content';
-import { DEFAULT_STYLE, type QRStyle } from './style';
+import { DEFAULT_STYLE, styleForRecord, type QRStyle } from './style';
 import type { QRCodeTracking } from './tracking';
 
 export const COLLECTION = 'app.atproto-qr.qr';
@@ -29,7 +29,7 @@ export function makeRecord(draft: Draft, existing?: QRRecord): QRRecord {
     $type: COLLECTION,
     kind: existing?.kind ?? 'fixed',
     content: draft.content,
-    style: draft.style,
+    style: styleForRecord(draft.style),
     qrValue: existing?.qrValue,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,

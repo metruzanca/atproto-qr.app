@@ -40,7 +40,6 @@ export default function Editor(props: { code?: { handle: string; id: string } })
   const [name, setName] = createSignal('');
   const [nameError, setNameError] = createSignal('');
   const [existingNames, setExistingNames] = createSignal<Set<string>>(new Set());
-  const [error, setError] = createSignal('');
   const [saving, setSaving] = createSignal(false);
   const [unlocked, setUnlocked] = createSignal(false);
   const [tracking, setTracking] = createSignal<QRCodeTracking | undefined>(undefined);
@@ -159,11 +158,10 @@ export default function Editor(props: { code?: { handle: string; id: string } })
     if (!d || !a || !p || err) return;
     const c = d.content;
     if (c.type === 'file' && !c.fields.blob) {
-      setError('Upload a file before saving.');
+      showToast('Upload a file before saving.', 'error');
       return;
     }
     setSaving(true);
-    setError('');
     try {
       const client = authedClient(a);
       const buildRecord = (): QRRecord => {
@@ -223,7 +221,7 @@ export default function Editor(props: { code?: { handle: string; id: string } })
         setNameError(err.message);
       } else {
         console.error(err);
-        setError('Could not save changes. Please try again.');
+        showToast('Could not save changes. Please try again.', 'error');
       }
     } finally {
       setSaving(false);
@@ -315,10 +313,6 @@ export default function Editor(props: { code?: { handle: string; id: string } })
                 Delete
               </button>
             </div>
-
-            <Show when={error()}>
-              <p class="mb-4 text-sm text-red-600 dark:text-red-400">{error()}</p>
-            </Show>
 
             <Show when={mode() === 'redirect' && redirectTarget()}>
               <div class="mb-4 rounded-xl border border-amber-200/80 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 backdrop-blur dark:border-amber-500/30 dark:text-amber-200">

@@ -40,6 +40,21 @@ export const DEFAULT_STYLE: QRStyle = {
 
 export const ERROR_CORRECTION_LEVELS: ('L' | 'M' | 'Q' | 'H')[] = ['L', 'M', 'Q', 'H'];
 
+/**
+ * atproto records have no float type — the PDS rejects non-integer numbers.
+ * Round every numeric style field to an integer before it is written.
+ */
+export function styleForRecord(style: QRStyle): QRStyle {
+  const int = (value: number, fallback: number) => (Number.isFinite(value) ? Math.round(value) : fallback);
+  return {
+    ...style,
+    size: int(style.size, DEFAULT_STYLE.size),
+    backgroundMargin: int(style.backgroundMargin, DEFAULT_STYLE.backgroundMargin),
+    imageMargin: int(style.imageMargin, DEFAULT_STYLE.imageMargin),
+    imageSize: int(style.imageSize, DEFAULT_STYLE.imageSize),
+  };
+}
+
 export function isDefaultStyle(style: QRStyle): boolean {
   return (Object.keys(DEFAULT_STYLE) as (keyof QRStyle)[]).every((key) => style[key] === DEFAULT_STYLE[key]);
 }

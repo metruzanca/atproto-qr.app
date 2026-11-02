@@ -235,8 +235,11 @@ export function StyleControls(props: {
               type="number"
               min={0}
               max={16}
+              step={1}
               value={s().imageMargin}
-              onInput={(e) => set({ imageMargin: Math.max(0, Number(e.currentTarget.value) || 0) })}
+              onInput={(e) =>
+                set({ imageMargin: Math.min(16, Math.round(Math.max(0, Number(e.currentTarget.value) || 0))) })
+              }
             />
           </Field>
           <Field label="Image size (%)">

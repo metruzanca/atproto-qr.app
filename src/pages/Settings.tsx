@@ -32,7 +32,6 @@ export default function Settings() {
   const [dirty, setDirty] = createSignal(false);
   const [saving, setSaving] = createSignal(false);
   const [applying, setApplying] = createSignal(false);
-  const [error, setError] = createSignal('');
   const [proxyUrl, setProxyUrl] = createSignal<string | undefined>(undefined);
   const [proxyDirty, setProxyDirty] = createSignal(false);
   const [proxySaving, setProxySaving] = createSignal(false);
@@ -52,18 +51,17 @@ export default function Settings() {
     if (!a || !p) return;
     const url = proxyUrl();
     if (url && !/^https?:\/\//i.test(url)) {
-      setError('Enter a full proxy URL (https://…).');
+      showToast('Enter a full proxy URL (https://…).', 'error');
       return;
     }
     setProxySaving(true);
-    setError('');
     try {
       await saveGlobalImageProxy(a, p.did, url);
       setProxyDirty(false);
       showToast('Global image proxy saved');
     } catch (err) {
       console.error(err);
-      setError('Could not save. Please try again.');
+      showToast('Could not save. Please try again.', 'error');
     } finally {
       setProxySaving(false);
     }
@@ -75,7 +73,6 @@ export default function Settings() {
     if (!a || !p) return;
     if (!confirm('Reset the global image proxy to the default? Codes using the default proxy will use images.weserv.nl.')) return;
     setProxySaving(true);
-    setError('');
     try {
       await saveGlobalImageProxy(a, p.did, undefined);
       setProxyUrl(undefined);
@@ -83,7 +80,7 @@ export default function Settings() {
       showToast('Global image proxy removed');
     } catch (err) {
       console.error(err);
-      setError('Could not remove the global image proxy.');
+      showToast('Could not remove the global image proxy.', 'error');
     } finally {
       setProxySaving(false);
     }
@@ -110,7 +107,7 @@ export default function Settings() {
         setCodes(all.filter((i) => (i.record.kind ?? 'fixed') === 'dynamic'));
       } catch (err) {
         console.error(err);
-        setError('Could not load your QR codes.');
+        showToast('Could not load your QR codes.', 'error');
       }
     })();
   });
@@ -133,17 +130,16 @@ export default function Settings() {
     const c = config();
     if (!a || !p || !c) return;
     if (!isValidTrackingConfig(c)) {
-      setError('Fill in the required fields for the selected provider.');
+      showToast('Fill in the required fields for the selected provider.', 'error');
       return;
     }
     setSaving(true);
-    setError('');
     try {
       await saveGlobalAnalytics(a, p.did, c);
       showToast('Global analytics saved');
     } catch (err) {
       console.error(err);
-      setError('Could not save. Please try again.');
+      showToast('Could not save. Please try again.', 'error');
     } finally {
       setSaving(false);
     }
@@ -155,14 +151,13 @@ export default function Settings() {
     if (!a || !p) return;
     if (!confirm('Remove the global analytics config? Codes that use global tracking will stop tracking.')) return;
     setSaving(true);
-    setError('');
     try {
       await saveGlobalAnalytics(a, p.did, undefined);
       setConfig(undefined);
       showToast('Global analytics removed');
     } catch (err) {
       console.error(err);
-      setError('Could not remove the global analytics config.');
+      showToast('Could not remove the global analytics config.', 'error');
     } finally {
       setSaving(false);
     }
@@ -174,7 +169,6 @@ export default function Settings() {
     const chosen = [...selected()];
     if (!a || !p || chosen.length === 0) return;
     setApplying(true);
-    setError('');
     let ok = 0;
     try {
       for (const rkey of chosen) {
@@ -193,7 +187,7 @@ export default function Settings() {
       showToast(`Applied global tracking to ${ok} code${ok === 1 ? '' : 's'}`);
     } catch (err) {
       console.error(err);
-      setError('Could not apply tracking to all selected codes.');
+      showToast('Could not apply tracking to all selected codes.', 'error');
     } finally {
       setApplying(false);
     }
@@ -224,10 +218,6 @@ export default function Settings() {
             <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Settings</h1>
             <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Stored in your own account on the network.</p>
           </div>
-
-          <Show when={error()}>
-            <p class="mb-4 text-sm text-red-600 dark:text-red-400">{error()}</p>
-          </Show>
 
           <section class="card p-5">
             <h2 class="section-label">
