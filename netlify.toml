@@ -1,0 +1,15 @@
+# Netlify configuration, including the "Deploy to Netlify" button template.
+# https://app.netlify.com/start/deploy?repository=https://github.com/metruzanca/atproto-qr.app
+
+[build]
+  command = "pnpm build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Fields the deploy button asks for. Both values are build-time, so changing
+# them afterwards needs a redeploy.
+[template.environment]
+  VITE_DOMAIN = "https://qr.example.com"
+  VITE_OWNER_HANDLE = ""

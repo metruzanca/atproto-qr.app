@@ -43,7 +43,9 @@ Your saved codes are records in your PDS (`app.atproto-qr.qr`). When you rename 
 
 ## Self-hosting
 
-The app is fully static: `dist/` runs on any static host, with nothing to run server-side. Support for Railway, Vercel, Netlify and Cloudflare Pages build in. See [`SELFHOST.md`](SELFHOST.md) for more information.
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/atproto-qrapp?utm_medium=integration&utm_source=button&utm_campaign=atproto-qr) [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmetruzanca%2Fatproto-qr.app&env=VITE_DOMAIN,VITE_OWNER_HANDLE&envDescription=I%20would%20recommend%20using%20the%20%60qr%60%20subdomain%20e.g.%20VITE_DOMAIN%3Dqr.sam.dev%20and%20VITE_OWNER_HANDLE%3Dsam.dev&envLink=https%3A%2F%2Fgithub.com%2Fmetruzanca%2Fatproto-qr.app%2Fblob%2Fmain%2FSELFHOST.md&project-name=atproto-qr&repository-name=atproto-qr&demo-url=atproto-qr.app) [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/metruzanca/atproto-qr.app) [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/metruzanca/atproto-qr.app)
+
+The app is fully static: `dist/` runs on any static host, with nothing to run server-side. Railway, Vercel, Netlify, Cloudflare Pages and Cloudflare Workers are already configured in the repo. See [`SELFHOST.md`](SELFHOST.md) for more information.
 
 ## Privacy
 

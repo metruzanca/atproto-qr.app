@@ -6,13 +6,21 @@ building `dist/` and serving it from any static host.
 
 ## Deploy
 
-- **Railway**: deploy the repo. `railpack.json` pins the node provider and Node
-  22; Railpack builds the Vite app and serves `dist/` through Caddy, including
+- **Railway**: use the [template](https://railway.com/deploy/atproto-qrapp) or
+  deploy the repo directly. `railpack.json` pins the node provider and Node 22;
+  Railpack builds the Vite app and serves `dist/` through Caddy, including
   `/health`. `package.json` has no `start` script on purpose, so Railpack stays
   on the static path.
 - **Vercel**: import the repo. `vercel.json` sets the build command, output
   directory and `index.html` rewrite.
-- **Netlify / Cloudflare Pages**: build `pnpm build`, publish `dist`.
+- **Cloudflare Workers**: `wrangler.jsonc` serves `dist/` with an SPA fallback,
+  so the deploy button or `wrangler deploy` works once the build has run.
+  `VITE_DOMAIN` has to be a build variable (Settings → Build → Build variables
+  and secrets), not a runtime var, or the OAuth metadata is never generated.
+- **Netlify**: the deploy button reads `netlify.toml`, which sets `pnpm build`,
+  `dist`, Node 22 and the env var fields. `public/_redirects` provides the SPA
+  fallback.
+- **Cloudflare Pages**: build `pnpm build`, publish `dist`.
   `public/_redirects` provides the SPA fallback.
 - **Anything else**: `pnpm install && pnpm build`, serve `dist/`, and fall back
   to `index.html` for unknown paths.
@@ -93,6 +101,9 @@ opt-in. To use your own, set it under **Settings → Image proxy**; it must acce
 - **Deep links 404**: the host is not falling back to `index.html`. On Railway,
   drop any custom start command, which disables Railpack's static serving;
   elsewhere add the rewrite.
+- **Sign-in fails on Cloudflare Workers**: `VITE_DOMAIN` was set as a runtime
+  variable. Move it to Settings → Build → Build variables and secrets, then
+  redeploy.
 - **Railpack treats the app as Node**: set `RAILPACK_SPA_OUTPUT_DIR=dist`.
 - **`pnpm install` fails in the build**: the lockfile and `pnpm-workspace.yaml`
   (pnpm 11 `allowBuilds`) must be present in the checkout.
