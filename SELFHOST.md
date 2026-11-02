@@ -19,10 +19,11 @@ building `dist/` and serving it from any static host.
 
 ## Environment
 
-| Variable            | Required | Description                                                                                                                                                                                    |
-| ------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_DOMAIN`       | yes      | Origin this instance is served from: `https://qr.example.com` or a bare `qr.example.com`. Generates the OAuth client metadata and redirect URI, and is the base of every link inside a QR code. |
-| `VITE_OWNER_HANDLE` | no       | Runs the deployment as a personal instance pinned to that atproto handle. See below.                                                                                                           |
+- `VITE_DOMAIN` (required): origin this instance is served from, e.g.
+  `https://qr.example.com` or a bare `qr.example.com`. Generates the OAuth client
+  metadata and redirect URI, and is the base of every link inside a QR code.
+- `VITE_OWNER_HANDLE` (optional): runs the deployment as a personal instance
+  pinned to that atproto handle. See below.
 
 Both are build-time values, so changing either needs a rebuild. The committed
 `.env` is a local-dev reference; a host's own environment wins over it.
