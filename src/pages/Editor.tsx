@@ -57,6 +57,15 @@ export default function Editor(props: { code?: { handle: string; id: string } })
     return contentToValue(d.content, { pdsUrl: a?.session.info.aud, did: profile()?.did });
   };
 
+  const editingLabel = () => {
+    const d = draft();
+    if (!d) return '';
+    if (mode() === 'qr' && (kind() === 'dynamic' || d.content.type === 'file')) {
+      return qrData().replace(/^https?:\/\//, '');
+    }
+    return contentTitle(d.content);
+  };
+
   const onUploadFile = async (file: File) => {
     const a = agent();
     if (!a) throw new Error('not signed in');
@@ -277,7 +286,7 @@ export default function Editor(props: { code?: { handle: string; id: string } })
             <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
               <div class="min-w-0">
                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                  Editing · {contentTitle(d().content)}
+                  Editing · <span class="normal-case">{editingLabel()}</span>
                 </p>
                 <h1 class="mt-1 flex flex-wrap items-center gap-2 truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                   {PERSONAL_MODE ? `#${target().id}` : `${target().handle}/${target().id}`}
