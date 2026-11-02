@@ -16,7 +16,8 @@ building `dist/` and serving it from any static host.
 - **Cloudflare Workers**: `wrangler.jsonc` serves `dist/` with an SPA fallback,
   so the deploy button or `wrangler deploy` works once the build has run.
   `VITE_DOMAIN` has to be a build variable (Settings → Build → Build variables
-  and secrets), not a runtime var, or the OAuth metadata is never generated.
+  and secrets), not a runtime var, or the build falls back to
+  `https://atproto-qr.app` and sign-in fails on your domain.
 - **Netlify**: the deploy button reads `netlify.toml`, which sets `pnpm build`,
   `dist`, Node 22 and the env var fields. `public/_redirects` provides the SPA
   fallback.
@@ -27,9 +28,10 @@ building `dist/` and serving it from any static host.
 
 ## Environment
 
-- `VITE_DOMAIN` (required): origin this instance is served from, e.g.
+- `VITE_DOMAIN` (optional): origin this instance is served from, e.g.
   `https://qr.example.com` or a bare `qr.example.com`. Generates the OAuth client
   metadata and redirect URI, and is the base of every link inside a QR code.
+  Defaults to `https://atproto-qr.app`.
 - `VITE_OWNER_HANDLE` (optional): runs the deployment as a personal instance
   pinned to that atproto handle. See below.
 
@@ -94,8 +96,9 @@ opt-in. To use your own, set it under **Settings → Image proxy**; it must acce
 
 - **"Client not found" on sign-in**: `VITE_DOMAIN` does not match the visited
   origin, or the metadata is unreachable. Check
-  `curl -sI {domain}/oauth-client-metadata.json`; if the build logged
-  `[oauth-client-metadata] VITE_DOMAIN is not set`, it was never generated.
+  `curl -sI {domain}/oauth-client-metadata.json`. Unset, both the app and the
+  generated metadata use `https://atproto-qr.app`, so a self-hosted copy has to
+  set `VITE_DOMAIN` to its own origin.
 - **Redirect URI mismatch after login**: same cause; the value must be scheme +
   host with no trailing slash, and the app must be rebuilt after changing it.
 - **Deep links 404**: the host is not falling back to `index.html`. On Railway,

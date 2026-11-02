@@ -47,6 +47,8 @@ Your saved codes are records in your PDS (`app.atproto-qr.qr`). When you rename 
 
 The app is fully static: `dist/` runs on any static host, with nothing to run server-side. Railway, Vercel, Netlify, Cloudflare Pages and Cloudflare Workers are already configured in the repo. See [`SELFHOST.md`](SELFHOST.md) for more information.
 
+`VITE_DOMAIN` is optional: set it to the origin you serve from (`https://qr.example.com`); unset, the build, its OAuth client metadata and every code link use `https://atproto-qr.app`.
+
 ## Privacy
 
 This site has no backend: no database, no accounts, no logs, no analytics. The only server ever involved is your PDS, and only for signed-in features (saving, listing, editing, deleting).

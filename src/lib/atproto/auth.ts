@@ -21,19 +21,19 @@ import type { ActorIdentifier, Did } from '@atcute/lexicons';
 import type {} from '@atcute/atproto';
 import type {} from '@atcute/bluesky';
 
-import { normalizeOrigin } from '../appOrigin';
+import { APP_ORIGIN } from '../appOrigin';
 
 export const SCOPE = 'atproto transition:generic';
 
 const DEV_REDIRECT_URI = 'http://127.0.0.1:3000/oauth/callback';
-// `VITE_DOMAIN` is where the deployment lives; the OAuth client_id and redirect
-// URI are derived from it, so it must match the URL people actually visit.
-const PUBLIC_ORIGIN = normalizeOrigin(import.meta.env.VITE_DOMAIN);
-
+// The OAuth client_id and redirect URI are derived from the deployment origin
+// (`VITE_DOMAIN`, else the canonical `https://atproto-qr.app`), so they always
+// match the generated client metadata. Both must stay absolute: authorization
+// servers reject a relative redirect_uri.
 export const CLIENT_ID = import.meta.env.DEV
   ? `http://localhost?redirect_uri=${encodeURIComponent(DEV_REDIRECT_URI)}&scope=${encodeURIComponent(SCOPE)}`
-  : `${PUBLIC_ORIGIN}/oauth-client-metadata.json`;
-export const REDIRECT_URI = import.meta.env.DEV ? DEV_REDIRECT_URI : `${PUBLIC_ORIGIN}/oauth/callback`;
+  : `${APP_ORIGIN}/oauth-client-metadata.json`;
+export const REDIRECT_URI = import.meta.env.DEV ? DEV_REDIRECT_URI : `${APP_ORIGIN}/oauth/callback`;
 
 export const identityResolver = new LocalActorResolver({
   handleResolver: new XrpcHandleResolver({ serviceUrl: 'https://public.api.bsky.app' }),

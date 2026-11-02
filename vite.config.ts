@@ -5,15 +5,7 @@ import { defineConfig, type Plugin } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import devtools from 'solid-devtools/vite';
 
-function normalizeOrigin(value: string | undefined): string {
-  const raw = (value ?? '').trim().replace(/\/+$/, '');
-  if (!raw) return '';
-  try {
-    return new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).origin;
-  } catch {
-    return '';
-  }
-}
+import { DEFAULT_APP_ORIGIN, normalizeOrigin } from './src/lib/origin';
 
 function oauthMetadataPlugin(): Plugin {
   let outDir = '';
@@ -27,12 +19,10 @@ function oauthMetadataPlugin(): Plugin {
       env = config.env as Record<string, string>;
     },
     closeBundle: async () => {
-      // `VITE_DOMAIN` is the single source of truth for this deployment's origin.
-      const origin = normalizeOrigin(env.VITE_DOMAIN) || normalizeOrigin(process.env.VITE_DOMAIN);
-      if (!origin) {
-        console.warn('[oauth-client-metadata] VITE_DOMAIN is not set — skipping metadata generation.');
-        return;
-      }
+      // `VITE_DOMAIN` pins this deployment's origin; unset, fall back to the
+      // canonical origin so the app and its metadata never point at nothing.
+      const origin =
+        normalizeOrigin(env.VITE_DOMAIN) || normalizeOrigin(process.env.VITE_DOMAIN) || DEFAULT_APP_ORIGIN;
       const metadata = {
         client_id: `${origin}/oauth-client-metadata.json`,
         client_name: 'atproto QR',
