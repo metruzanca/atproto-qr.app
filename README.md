@@ -4,20 +4,6 @@ A beautiful QR code generator with **atproto-backed editable codes**. Pure front
 
 [Live app](https://atproto-qr.app)
 
----
-
-<!--## Screenshots-->
-
-<!-- Drop screenshots into screenshots/ and reference them here. -->
-
-<!--![QR studio — design styled QR codes](screenshots/studio.png)
-
-![Your saved codes](screenshots/codes.png)
-
-![A code's public page](screenshots/public.png)
-
-![The editor](screenshots/editor.png)-->
-
 ## Features
 
 ### QR Code Editor
@@ -76,7 +62,7 @@ On any other host, add that fallback yourself. Set `VITE_DOMAIN` in the host's b
 
 These are baked in at build time, so changing them requires a rebuild.
 
-Set `VITE_OWNER_HANDLE` to run your own single-owner instance on a short domain — e.g. `qr.yourname.dev/#gg27` instead of `qr.yourname.dev/you.example.com/gg27`. The handle stays in the env var, links stay short, and the records still live in your PDS. See [the self-hosting notes](SELFHOST.md#personal-instance-mode) for the details and tradeoffs.
+Set `VITE_OWNER_HANDLE` to run your own single-owner instance on a short domain — e.g. `qr.yourname.dev/#gg27` instead of `qr.yourname.dev/you.example.com/gg27`. The handle stays in the env var, links stay short, and the records still live in your PDS. See [the self-hosting notes](SELFHOST.md#personal-instance) for the details and tradeoffs.
 
 ### CORS image proxy for logos
 
